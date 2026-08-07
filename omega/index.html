@@ -1,128 +1,98 @@
 <!doctype html>
 <html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Avaliando Práticas de Código em HDLs</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="survey-shell" id="app">
+      <section class="panel" id="intro-screen" aria-labelledby="intro-title">
+        <p class="eyebrow">Questionário SystemVerilog</p>
+        <h1 id="intro-title">Avaliando Práticas de Código em Linguagens de Descrição de Hardware (SystemVerilog)</h1>
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Avaliando Práticas de Código em HDLs</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
+        <div class="intro-copy">
+          <p>Somos pesquisadores da Universidade Federal de Alagoas (UFAL), Brasil, e gostaríamos de convidar você a participar do nosso questionário. Agradecemos muito pelo seu tempo.</p>
+          <p>Esta pesquisa faz parte de uma investigação acadêmica sobre compreensão e representação de código em Linguagens de Descrição de Hardware (HDLs), com foco em SystemVerilog.</p>
+          <p>Neste questionário, você verá uma série de perguntas relacionadas a pequenos exemplos de código em SystemVerilog. Cada código aparecerá na mesma tela de sua pergunta e alternativas.</p>
+          <p>O tempo começará a contar ao clicar em Iniciar e será reiniciado automaticamente ao avançar para cada próxima pergunta.</p>
+          <p>Todas as respostas são anônimas e serão usadas exclusivamente para fins de pesquisa.</p>
+          <p><strong>Tempo estimado:</strong> 10 minutos</p>
+          <p>Em caso de dúvidas, entre em contato pelo e-mail <a href="mailto:gpmrs@ic.ufal.br">gpmrs@ic.ufal.br</a>.</p>
+          <p>Obrigado,</p>
+          <p>Gabriela Soares, Universidade Federal de Alagoas, Brasil<br>Gabriel Gomes, Universidade Federal de Alagoas, Brasil<br>Márcio Ribeiro, Universidade Federal de Alagoas, Brasil</p>
+        </div>
 
-<body>
-  <main class="survey-shell" id="app">
-    <section class="panel" id="intro-screen" aria-labelledby="intro-title">
-      <p class="eyebrow">Questionário SystemVerilog</p>
-      <h1 id="intro-title">Avaliando Práticas de Código em Linguagens de Descrição de Hardware (SystemVerilog)</h1>
+        <form id="demographic-form" class="form-block">
+          <h2>Perguntas demográficas</h2>
+          <p>Antes de iniciar o experimento, gostaríamos de fazer algumas perguntas sobre sua experiência. Essas informações ajudarão na análise dos resultados.</p>
 
-      <div class="intro-copy">
-        <p>Somos pesquisadores da Universidade Federal de Alagoas (UFAL), Brasil, e gostaríamos de convidar você a
-          participar do nosso questionário. Agradecemos muito pelo seu tempo.</p>
-        <p>Esta pesquisa faz parte de uma investigação acadêmica sobre compreensão e representação de código em
-          Linguagens de Descrição de Hardware (HDLs), com foco em SystemVerilog.</p>
-        <p>Neste questionário, você verá uma série de perguntas relacionadas a pequenos exemplos de código em
-          SystemVerilog. Os códigos estarão abertos no VSCode, em outra tela, em páginas numeradas.</p>
-        <p>Antes de cada pergunta, a aplicação indicará qual página do VSCode você deve abrir. O tempo da pergunta só
-          começará a contar depois que você confirmar que está na página correta.</p>
-        <p>Todas as respostas são anônimas e serão usadas exclusivamente para fins de pesquisa.</p>
-        <p><strong>Tempo estimado:</strong> 10 minutos</p>
-        <p>Em caso de dúvidas, entre em contato pelo e-mail <a href="mailto:gpmrs@ic.ufal.br">gpmrs@ic.ufal.br</a>.</p>
-        <p>Obrigado,</p>
-        <p>Gabriela Soares, Universidade Federal de Alagoas, Brasil<br>Gabriel Gomes, Universidade Federal de Alagoas,
-          Brasil<br>Márcio Ribeiro, Universidade Federal de Alagoas, Brasil</p>
-      </div>
+          <label class="field">
+            <span>Quantos anos de experiência você tem com Linguagens de Descrição de Hardware, mais especificamente em SystemVerilog?</span>
+            <select name="experienciaAnos" required>
+              <option value="">Selecione uma opção</option>
+              <option value="1 ou menos">1 ou menos</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5 ou mais">5 ou mais</option>
+            </select>
+          </label>
 
-      <form id="demographic-form" class="form-block">
-        <h2>Perguntas demográficas</h2>
-        <p>Antes de iniciar o experimento, gostaríamos de fazer algumas perguntas sobre sua experiência. Essas
-          informações ajudarão na análise dos resultados.</p>
+          <label class="field">
+            <span>Como você avalia sua proficiência com Linguagens de Descrição de Hardware, mais especificamente em SystemVerilog?</span>
+            <select name="proficiencia" required>
+              <option value="">Selecione uma opção</option>
+              <option value="Novato">Novato</option>
+              <option value="Iniciante">Iniciante</option>
+              <option value="Intermediário">Intermediário</option>
+              <option value="Avançado">Avançado</option>
+              <option value="Especialista">Especialista</option>
+            </select>
+          </label>
 
-        <label class="field">
-          <span>Quantos anos de experiência você tem com Linguagens de Descrição de Hardware, mais especificamente em
-            SystemVerilog?</span>
-          <select name="experienciaAnos" required>
-            <option value="">Selecione uma opção</option>
-            <option value="1 ou menos">1 ou menos</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5 ou mais">5 ou mais</option>
-          </select>
-        </label>
+          <fieldset class="field radio-group">
+            <legend>Qual é sua principal área de experiência?</legend>
+            <label><input type="radio" name="areaExperiencia" value="Acadêmica" required> Acadêmica (estudante, pesquisador etc.)</label>
+            <label><input type="radio" name="areaExperiencia" value="Profissional" required> Profissional (indústria, empresa etc.)</label>
+          </fieldset>
 
-        <label class="field">
-          <span>Como você avalia sua proficiência com Linguagens de Descrição de Hardware, mais especificamente em
-            SystemVerilog?</span>
-          <select name="proficiencia" required>
-            <option value="">Selecione uma opção</option>
-            <option value="Novato">Novato</option>
-            <option value="Iniciante">Iniciante</option>
-            <option value="Intermediário">Intermediário</option>
-            <option value="Avançado">Avançado</option>
-            <option value="Especialista">Especialista</option>
-          </select>
-        </label>
+          <p class="error-message" id="intro-error" role="alert"></p>
+          <button class="primary-button" type="submit">Iniciar</button>
+        </form>
+      </section>
 
-        <fieldset class="field radio-group">
-          <legend>Qual é sua principal área de experiência?</legend>
-          <label><input type="radio" name="areaExperiencia" value="Acadêmica" required> Acadêmica (estudante,
-            pesquisador etc.)</label>
-          <label><input type="radio" name="areaExperiencia" value="Profissional" required> Profissional (indústria,
-            empresa etc.)</label>
-        </fieldset>
+      <section class="panel hidden" id="question-screen" aria-labelledby="question-title">
+        <div class="progress-row">
+          <p class="eyebrow" id="progress-label">Pergunta 1 de 6</p>
+          <p class="participant-id" id="participant-label"></p>
+        </div>
+        <h1 id="question-title"></h1>
+        <pre class="code-block"><code id="code-block"></code></pre>
 
-        <p class="error-message" id="intro-error" role="alert"></p>
-        <button class="primary-button" type="submit">Iniciar</button>
-      </form>
-    </section>
+        <form id="answer-form" class="form-block" novalidate>
+          <fieldset class="field radio-group" id="options-fieldset">
+            <legend id="question-text"></legend>
+            <div id="options-list"></div>
+          </fieldset>
 
-    <section class="panel hidden centered-screen" id="navigation-screen" aria-labelledby="navigation-title">
-      <p class="eyebrow" id="navigation-progress">Pergunta 1 de 6</p>
-      <h1 id="navigation-title">Vá para a página de número <span id="navigation-page-name">1</span> do VSCode na tela
-        abaixo.</h1>
-      <button class="primary-button" id="navigation-next" type="button">Próximo</button>
-    </section>
+          <p class="error-message" id="answer-error" role="alert"></p>
+          <button class="primary-button" type="submit" id="next-button">Avançar</button>
+        </form>
+      </section>
 
-    <section class="panel hidden centered-screen" id="ready-screen" aria-labelledby="ready-title">
-      <p class="eyebrow" id="ready-progress">Pergunta 1 de 6</p>
-      <h1 id="ready-title">Já está na página <span id="ready-page-name">1</span>?</h1>
-      <label class="confirm-check">
-        <input type="checkbox" id="ready-check">
-        <span>Sim, estou na página correta do VSCode.</span>
-      </label>
-      <button class="primary-button" id="ready-start" type="button" disabled>Iniciar pergunta</button>
-    </section>
+      <section class="panel hidden" id="complete-screen" aria-labelledby="complete-title">
+        <p class="eyebrow">Experimento concluído</p>
+        <h1 id="complete-title">Obrigado por participar.</h1>
+        <p>Suas respostas e os tempos de cada pergunta foram salvos neste navegador. Baixe o arquivo de resultados e envie aos pesquisadores, caso solicitado.</p>
+        <div class="actions">
+          <button class="primary-button" id="download-json" type="button">Baixar JSON</button>
+          <button class="secondary-button" id="download-csv" type="button">Baixar CSV</button>
+        </div>
+      </section>
+    </main>
 
-    <section class="panel hidden" id="question-screen" aria-labelledby="question-title">
-      <div class="progress-row">
-        <p class="eyebrow" id="progress-label">Pergunta 1 de 6</p>
-        <p class="participant-id" id="participant-label"></p>
-      </div>
-      <h1 id="question-title"></h1>
-
-      <form id="answer-form" class="form-block" novalidate>
-        <fieldset class="field radio-group" id="options-fieldset">
-          <legend id="question-text"></legend>
-          <div id="options-list"></div>
-        </fieldset>
-
-        <p class="error-message" id="answer-error" role="alert"></p>
-        <button class="primary-button" type="submit" id="next-button">Avançar</button>
-      </form>
-    </section>
-
-    <section class="panel hidden" id="complete-screen" aria-labelledby="complete-title">
-      <p class="eyebrow">Experimento concluído</p>
-      <h1 id="complete-title">Obrigado por participar.</h1>
-      <p>Suas respostas e os tempos de cada pergunta foram salvos neste navegador. Baixe o arquivo de resultados e envie
-        aos pesquisadores, caso solicitado.</p>
-      <div class="actions">
-        <button class="primary-button" id="download-json" type="button">Baixar JSON</button>
-        <button class="secondary-button" id="download-csv" type="button">Baixar CSV</button>
-      </div>
-    </section>
-  </main>
-
-  <script src="app.js"></script>
-</body>
-
+    <script src="app.js"></script>
+  </body>
 </html>

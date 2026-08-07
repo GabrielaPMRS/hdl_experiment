@@ -9,8 +9,8 @@ module example;
 
     initial begin
         lo = 20;
-        med = 135;
-        hi = 347;
+        med = 224;
+        hi = 164;
 
         result = lo < med < hi;
     end

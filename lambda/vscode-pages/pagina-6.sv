@@ -8,7 +8,7 @@ module testbench;
     logic [2:0] opcode;
 
     always_comb begin
-        case (instruction) inside
+        casex (instruction)
 
             4'b0???:
                 opcode = 3'b001;

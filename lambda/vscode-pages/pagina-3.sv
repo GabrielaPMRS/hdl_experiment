@@ -4,7 +4,7 @@
 
 module testbench;
 
-    function automatic int maxx(int a, int b);
+    function int maxx(int a, int b);
         int max = a;
         if (b > max)
             max = b;
