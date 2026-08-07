@@ -158,6 +158,8 @@ const session = {
 };
 
 const introScreen = document.querySelector("#intro-screen");
+const eyeBreakScreen = document.querySelector("#eye-break-screen");
+const eyeBreakNext = document.querySelector("#eye-break-next");
 const questionScreen = document.querySelector("#question-screen");
 const completeScreen = document.querySelector("#complete-screen");
 const demographicForm = document.querySelector("#demographic-form");
@@ -173,6 +175,7 @@ const optionsList = document.querySelector("#options-list");
 const nextButton = document.querySelector("#next-button");
 const downloadJson = document.querySelector("#download-json");
 const downloadCsv = document.querySelector("#download-csv");
+let eyeBreakNextStep = null;
 
 function shuffle(items) {
   const copy = [...items];
@@ -183,19 +186,19 @@ function shuffle(items) {
   return copy;
 }
 
-function getCodeNumber(item) {
-  const id = typeof item === "string" ? item : item.codigoId;
-  return Number(id.replace("code-", ""));
-}
-
-function getSortedResponses() {
-  return [...session.responses].sort((first, second) => getCodeNumber(first) - getCodeNumber(second));
+function getResponsesInExecutionOrder() {
+  return [...session.responses];
 }
 
 function showScreen(screen) {
-  [introScreen, questionScreen, completeScreen].forEach((item) => item.classList.add("hidden"));
+  [introScreen, eyeBreakScreen, questionScreen, completeScreen].forEach((item) => item.classList.add("hidden"));
   screen.classList.remove("hidden");
   fitVisibleScreen();
+}
+
+function showEyeBreak(nextStep) {
+  eyeBreakNextStep = nextStep;
+  showScreen(eyeBreakScreen);
 }
 
 function fitVisibleScreen() {
@@ -243,7 +246,7 @@ function buildResultPayload() {
     versaoExperimento: experimentVersion,
     participanteId: session.participantId,
     demografia: session.demographics,
-    perguntas: getSortedResponses(),
+    perguntas: getResponsesInExecutionOrder(),
     iniciadoEm: session.startedAt,
     concluidoEm: session.completedAt
   };
@@ -287,7 +290,7 @@ function startSurvey(event) {
   session.startedAt = new Date().toISOString();
   session.completedAt = null;
   blockBrowserBack();
-  renderQuestion();
+  showEyeBreak(renderQuestion);
 }
 
 function submitAnswer(event) {
@@ -312,6 +315,7 @@ function submitAnswer(event) {
 
   const elapsedMs = Math.round(performance.now() - session.pageStartedAt);
   session.responses.push({
+    ordemExecucao: session.currentIndex + 1,
     codigoId: item.id,
     codigoTitulo: item.title,
     segundos: Number((elapsedMs / 1000).toFixed(2)),
@@ -321,13 +325,13 @@ function submitAnswer(event) {
 
   if (session.currentIndex < session.order.length - 1) {
     session.currentIndex += 1;
-    renderQuestion();
+    showEyeBreak(renderQuestion);
     return;
   }
 
   session.completedAt = new Date().toISOString();
   persistSession();
-  showScreen(completeScreen);
+  showEyeBreak(() => showScreen(completeScreen));
 }
 
 function downloadFile(filename, content, type) {
@@ -355,6 +359,7 @@ function buildCsv() {
       "experienciaAnos",
       "proficiencia",
       "areaExperiencia",
+      "ordemExecucao",
       "codigoId",
       "codigoTitulo",
       "segundos",
@@ -362,13 +367,14 @@ function buildCsv() {
     ]
   ];
 
-  getSortedResponses().forEach((response) => {
+  getResponsesInExecutionOrder().forEach((response) => {
     rows.push([
       session.participantId,
       experimentVersion,
       session.demographics.experienciaAnos,
       session.demographics.proficiencia,
       session.demographics.areaExperiencia,
+      response.ordemExecucao,
       response.codigoId,
       response.codigoTitulo,
       response.segundos,
@@ -381,6 +387,11 @@ function buildCsv() {
 
 demographicForm.addEventListener("submit", startSurvey);
 answerForm.addEventListener("submit", submitAnswer);
+eyeBreakNext.addEventListener("click", () => {
+  const nextStep = eyeBreakNextStep;
+  eyeBreakNextStep = null;
+  nextStep?.();
+});
 downloadJson.addEventListener("click", () => {
   downloadFile(`experimento-hdl-${experimentVersion}-${session.participantId}.json`, JSON.stringify(buildResultPayload(), null, 2), "application/json");
 });
