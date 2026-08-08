@@ -272,6 +272,59 @@ def visualizeScanPath(df, diretorio, participante, tarefa, x, y, imagem):
     plt.close()
 
 #gera mapa de calor baseado nas fixacoes de participantes individuais de uma tarefa especifica
+# def geraHeatmapBaseadoEmFixacaoDuracao(imagem, diretorio, dfx, dfy, dfduracao, x, y, participante, tarefa, upperBound):
+#     plt.close("all")
+#     map_img = mpimg.imread(imagem)
+#     xmin, xmax = 0, x
+#     ymin, ymax = 0, y
+    
+#     # Peform the kernel density estimate
+#     xx, yy = np.mgrid[xmin:xmax:100j, ymin:ymax:100j]
+#     positions = np.vstack([xx.ravel(), yy.ravel()])
+#     values = np.vstack([dfx, dfy])
+#     kernel = st.gaussian_kde(values, weights = dfduracao)
+#     f = np.reshape(kernel(positions).T, xx.shape)
+    
+#     fig = pl.figure()
+#     ax = fig.gca()
+#     ax.set_xlim(xmin, xmax)
+#     ax.set_ylim(ymin, ymax)
+#     # Contourf plot
+#     cfset = ax.contourf(xx, yy, f, cmap='Reds', levels = 10)
+#     ## Or kernel density estimate plot instead of the contourf plot
+#     #ax.imshow(np.rot90(f), cmap='Blues', extent=[xmin, xmax, ymin, ymax])
+    
+#     #alpha = (len(dfx) - 0) / (upperBound - 0)
+#     #for i in range(len(cfset.collections)):
+#         #colore de acordo com o aplha
+#         #cfset.collections[i].set_alpha((i*0.1)*alpha)
+    
+#     # Contour plot
+#     #cset = ax.contour(xx, yy, f, colors='grey', levels = 10)
+#     # Label plot
+#     #cfset.collections[0].set_alpha(0.0)
+#     #ax.clabel(cset, inline=1, fontsize=10)
+#     #ax.set_title("Participant: "+participante+ " Task: "+tarefa)
+
+#     alpha = len(dfx) / upperBound
+#     alpha = min(max(alpha, 0.0), 1.0)
+
+#     cores = cfset.get_facecolors()
+
+#     for i in range(len(cores)):
+#         cores[i, 3] = (i * 0.1) * alpha
+
+#     if len(cores) > 0:
+#         cores[0, 3] = 0.0
+
+#     cfset.set_facecolors(cores)
+
+#     ax.set_ylabel("y-coordinate")
+#     ax.set_xlabel("x-coordinate")
+
+#     plt.imshow(map_img, zorder=0, extent=[0.0, x, 0.0, y])
+#     salvaImagem(plt,diretorio+'Heatmap Fix com Duracao ('+ tarefa+').png')
+
 def geraHeatmapBaseadoEmFixacaoDuracao(imagem, diretorio, dfx, dfy, dfduracao, x, y, participante, tarefa, upperBound):
     plt.close("all")
     map_img = mpimg.imread(imagem)
@@ -290,7 +343,7 @@ def geraHeatmapBaseadoEmFixacaoDuracao(imagem, diretorio, dfx, dfy, dfduracao, x
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
     # Contourf plot
-    cfset = ax.contourf(xx, yy, f, cmap='Reds', levels = 10)
+    #cfset = ax.contourf(xx, yy, f, cmap='Reds', levels = 10)
     ## Or kernel density estimate plot instead of the contourf plot
     #ax.imshow(np.rot90(f), cmap='Blues', extent=[xmin, xmax, ymin, ymax])
     
@@ -306,23 +359,54 @@ def geraHeatmapBaseadoEmFixacaoDuracao(imagem, diretorio, dfx, dfy, dfduracao, x
     #ax.clabel(cset, inline=1, fontsize=10)
     #ax.set_title("Participant: "+participante+ " Task: "+tarefa)
 
+    # alpha = len(dfx) / upperBound
+    # alpha = min(max(alpha, 0.0), 1.0)
+
+    # cores = cfset.get_facecolors()
+
+    # for i in range(len(cores)):
+    #     cores[i, 3] = (i * 0.1) * alpha
+
+    # if len(cores) > 0:
+    #     cores[0, 3] = 0.0
+
+    # cfset.set_facecolors(cores)
+
+    # Desenha a imagem da tarefa no fundo
+    ax.imshow(
+        map_img,
+        zorder=0,
+        extent=[xmin, xmax, ymin, ymax],
+        aspect='auto'
+    )
+
+    # Transparência baseada na quantidade de fixações
     alpha = len(dfx) / upperBound
     alpha = min(max(alpha, 0.0), 1.0)
 
-    cores = cfset.get_facecolors()
+    # Cria uma escala vermelha com transparência crescente
+    cores = plt.cm.Reds(np.linspace(0, 1, 10))
+    cores[:, 3] = np.linspace(0, alpha, 10)
 
-    for i in range(len(cores)):
-        cores[i, 3] = (i * 0.1) * alpha
+    # O primeiro nível fica completamente transparente
+    cores[0, 3] = 0.0
 
-    if len(cores) > 0:
-        cores[0, 3] = 0.0
+    mapa_cores = ListedColormap(cores)
 
-    cfset.set_facecolors(cores)
+    # Desenha o heatmap sobre a imagem
+    cfset = ax.contourf(
+        xx,
+        yy,
+        f,
+        cmap=mapa_cores,
+        levels=10,
+        zorder=1
+    )
 
     ax.set_ylabel("y-coordinate")
     ax.set_xlabel("x-coordinate")
 
-    plt.imshow(map_img, zorder=0, extent=[0.0, x, 0.0, y])
+    #plt.imshow(map_img, zorder=0, extent=[0.0, x, 0.0, y])
     salvaImagem(plt,diretorio+'Heatmap Fix com Duracao ('+ tarefa+').png')
 
 def connectpoints(x,y,p1,p2,cont,inicio):    
