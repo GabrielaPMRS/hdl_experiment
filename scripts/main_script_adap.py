@@ -129,7 +129,7 @@ def converteTempoParaSegundos(df):
         string = df.tempo[i]
         lista = string.split(":")
         tempo = int(lista[0])*3600000+int(lista[1])*60000+int(lista[2])*1000+int(lista[3])
-        df.loc[i, 'tempo'] = int(tempo)
+        df.loc[i, 'tempo'] = str(int(tempo))
             
     # como o tempo sempre aumenta, vamos focar no tempo relativo ao inicio
     df.tempo = df.tempo.values.astype(np.int64)
@@ -154,6 +154,8 @@ def salvaImagem(plt,imagem,dpiVal=200):
 # Gaze points correction
 # =========================
 def correctPointsYaxis(participante, tarefa):
+    dy = 0
+    
     if participante == "001":
         dy = 15
     elif participante == "002":
@@ -236,7 +238,7 @@ def pairwise(iterable):
 def geraGraficoDePontosFixationTransparenteParaUmPart(df, diretorio, participante, tarefa, x, y, imagem):
     plt.close("all")
     map_img = mpimg.imread(imagem)
-    ax = sns.scatterplot(x=df.x, y=df.y, size=df.duracao, alpha = .4 ,edgecolor=['none'], color = 'red')
+    ax = sns.scatterplot(x=df.x, y=df.y, size=df.duracao, alpha = .4 ,edgecolor='none', color = 'red')
     alteraMargens(ax,0,x,0,y)
     
     plt.imshow(map_img, zorder=0, extent=[0.0, x, 0.0, y])
@@ -292,17 +294,31 @@ def geraHeatmapBaseadoEmFixacaoDuracao(imagem, diretorio, dfx, dfy, dfduracao, x
     ## Or kernel density estimate plot instead of the contourf plot
     #ax.imshow(np.rot90(f), cmap='Blues', extent=[xmin, xmax, ymin, ymax])
     
-    alpha = (len(dfx) - 0) / (upperBound - 0)
-    for i in range(len(cfset.collections)):
+    #alpha = (len(dfx) - 0) / (upperBound - 0)
+    #for i in range(len(cfset.collections)):
         #colore de acordo com o aplha
-        cfset.collections[i].set_alpha((i*0.1)*alpha)
+        #cfset.collections[i].set_alpha((i*0.1)*alpha)
     
     # Contour plot
     #cset = ax.contour(xx, yy, f, colors='grey', levels = 10)
     # Label plot
-    cfset.collections[0].set_alpha(0.0)
+    #cfset.collections[0].set_alpha(0.0)
     #ax.clabel(cset, inline=1, fontsize=10)
     #ax.set_title("Participant: "+participante+ " Task: "+tarefa)
+
+    alpha = len(dfx) / upperBound
+    alpha = min(max(alpha, 0.0), 1.0)
+
+    cores = cfset.get_facecolors()
+
+    for i in range(len(cores)):
+        cores[i, 3] = (i * 0.1) * alpha
+
+    if len(cores) > 0:
+        cores[0, 3] = 0.0
+
+    cfset.set_facecolors(cores)
+
     ax.set_ylabel("y-coordinate")
     ax.set_xlabel("x-coordinate")
 
@@ -343,7 +359,7 @@ def addHeaderSepSemicolon(diretorio):
 def main():
     
     listaParticipantes =["P00"]
-    listaTarefas =  ["T01, T02, T03, T04, T05, T06"]
+    listaTarefas =  ["T01", "T02", "T03", "T04", "T05", "T06"]
     
     for participante in listaParticipantes:
         for tarefa in listaTarefas:
@@ -355,7 +371,7 @@ def main():
             x = 1920
             y = 1080     
 
-            diretorio = "C:/Users/EASY acadêmico/Documents/demo/graficos/"+participante+"/"+participante+" "+tarefa+"/"
+            diretorio = "C:/Users/EASY acadêmico/Documents/demo/graficos/"+participante+"/"+participante + tarefa+"/"
 
             dy = correctPointsYaxis(participante, tarefa)
             dx = 0
