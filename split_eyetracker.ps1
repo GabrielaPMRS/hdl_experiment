@@ -22,6 +22,8 @@ Get-Content -LiteralPath $InputPath | ForEach-Object {
         $records.Add([pscustomobject]@{
             Line = $lineNumber
             Text = $_
+            X = [double]::Parse($match.Groups[1].Value.Trim(), $culture)
+            Y = [double]::Parse($match.Groups[2].Value.Trim(), $culture)
             Time = [datetime]::ParseExact($match.Groups[3].Value, $timeFormat, $culture)
         })
     }
@@ -48,6 +50,7 @@ if ($gaps.Count -lt 7) {
 $selectedGaps = $gaps | Select-Object -First 7
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $utf8WithoutBom = [Text.UTF8Encoding]::new($false)
+$cleaningSummary = [System.Collections.Generic.List[object]]::new()
 
 for ($task = 1; $task -le 6; $task++) {
     $startIndex = $selectedGaps[$task - 1].AfterIndex
@@ -55,16 +58,44 @@ for ($task = 1; $task -le 6; $task++) {
     $name = 'P{0}T{1:D2}.txt' -f $Participant, $task
     $outputPath = Join-Path $OutputDirectory $name
     $writer = [IO.StreamWriter]::new($outputPath, $false, $utf8WithoutBom)
+    $kept = 0
+    $removedNegativeX = 0
+    $removedNegativeY = 0
+    $removedXAtOrAbove820 = 0
     try {
         $writer.WriteLine('x,y,tempo')
         for ($index = $startIndex; $index -le $endIndex; $index++) {
-            $writer.WriteLine($records[$index].Text)
+            $record = $records[$index]
+            if ($record.X -lt 0) {
+                $removedNegativeX++
+                continue
+            }
+            if ($record.Y -lt 0) {
+                $removedNegativeY++
+                continue
+            }
+            if ($record.X -ge 820) {
+                $removedXAtOrAbove820++
+                continue
+            }
+            $writer.WriteLine($record.Text)
+            $kept++
         }
     }
     finally {
         $writer.Dispose()
     }
+    $cleaningSummary.Add([pscustomobject]@{
+        File = $name
+        OriginalRows = $endIndex - $startIndex + 1
+        KeptRows = $kept
+        RemovedNegativeX = $removedNegativeX
+        RemovedNegativeY = $removedNegativeY
+        RemovedXAtOrAbove820 = $removedXAtOrAbove820
+    })
 }
+
+$cleaningSummary | Export-Csv -LiteralPath (Join-Path $OutputDirectory 'resumo_limpeza.csv') -NoTypeInformation -Encoding utf8
 
 $selectedGaps | ForEach-Object {
     $before = $records[$_.BeforeIndex]

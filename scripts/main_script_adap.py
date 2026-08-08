@@ -342,21 +342,20 @@ def addHeaderSepSemicolon(diretorio):
 # ============================================================
 def main():
     
-    listaParticipantes =["002"]
-    listaTarefas =  ["11R"]
+    listaParticipantes =["P00"]
+    listaTarefas =  ["T01, T02, T03, T04, T05, T06"]
     
     for participante in listaParticipantes:
         for tarefa in listaTarefas:
             print(participante)
-            dados_dir = "/Users/josealdo/Documents/demo/data/"+participante+"/"+participante+" "+tarefa+" 1.txt"
-            imagem = "/Users/josealdo/Documents/demo/telas/"+tarefa+".png"
+            dados_dir = "C:/Users/EASY acadêmico/Documents/demo/data/" + participante + "/" + participante + tarefa + " 1.txt"
+            imagem = "C:/Users/EASY acadêmico/Documents/demo/telas/" + tarefa + ".png"
             df = pd.read_csv(dados_dir)
 
-            x = 1366
-            y = 768     
+            x = 1920
+            y = 1080     
 
-            diretorio = "/Users/josealdo/Documents/demo/graficos/"+participante+"/"+participante+" "+tarefa+"/"
-            diretorio = "/Users/josealdo/Documents/demo/graficos/"+participante+"/"+participante+" "+tarefa+"/"
+            diretorio = "C:/Users/EASY acadêmico/Documents/demo/graficos/"+participante+"/"+participante+" "+tarefa+"/"
 
             dy = correctPointsYaxis(participante, tarefa)
             dx = 0
@@ -373,12 +372,12 @@ def main():
             #computa fixations
             Sfix, Efix = fixation_detection(df.x, df.y, df.tempo)
             
-            with open("/Users/josealdo/Documents/demo/data/"+participante+"/Fixations "+participante+" "+tarefa+".csv", 'w', newline='') as file:
+            with open("C:/Users/EASY acadêmico/Documents/demo/data/"+participante+"/Fixations "+participante+" "+tarefa+".csv", 'w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(["tempo", "tempofinal", "duracao","x", "y"])
                 for i in Efix:
                      writer.writerow(i)
-            dffixation = pd.read_csv("/Users/josealdo/Documents/demo/data/"+participante+"/Fixations "+participante+" "+tarefa+".csv")       
+            dffixation = pd.read_csv("C:/Users/EASY acadêmico/Documents/demo/data/"+participante+"/Fixations "+participante+" "+tarefa+".csv")       
             
             codigo, linhas_codigo, aoi1, linhas_aoi1, aoi2 = retornaLimitesDasAOIs(tarefa, y)
             
@@ -394,7 +393,7 @@ def main():
             print(participante)
             print(tarefa)
             
-            geraGraficoEixoYOneColor(dffixation, diretorio, participante, tarefa, x, y, imagem)
+            # geraGraficoEixoYOneColor(dffixation, diretorio, participante, tarefa, x, y, imagem)
             geraGraficoDePontosFixationTransparenteParaUmPart(dffixation, diretorio, participante, tarefa, x, y, imagem)
             geraHeatmapBaseadoEmFixacaoDuracao(imagem, diretorio, dffixation.x, dffixation.y, dffixation.duracao, x, y, participante, tarefa,200)
                 
