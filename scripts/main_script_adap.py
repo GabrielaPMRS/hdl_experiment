@@ -3,6 +3,7 @@
 # =========================
 import os
 import csv
+import argparse
 import statistics
 from itertools import tee
 
@@ -441,21 +442,69 @@ def addHeaderSepSemicolon(diretorio):
 # Main experiment loop for all subjects and tasks
 # ============================================================
 def main():
-    
-    listaParticipantes =["P00"]
-    listaTarefas =  ["T01", "T02", "T03", "T04", "T05", "T06"]
-    
-    for participante in listaParticipantes:
-        for tarefa in listaTarefas:
+    parser = argparse.ArgumentParser(
+        description="Gera graficos usando a ordem real registrada pelo experimento."
+    )
+    parser.add_argument("--participant", default="P00")
+    parser.add_argument(
+        "--data-dir",
+        default="C:/Users/EASY acadêmico/Documents/demo/data"
+    )
+    parser.add_argument(
+        "--images-dir",
+        default="C:/Users/EASY acadêmico/Documents/demo/telas"
+    )
+    parser.add_argument(
+        "--graphs-dir",
+        default="C:/Users/EASY acadêmico/Documents/demo/graficos"
+    )
+    parser.add_argument(
+        "--mapping",
+        help="ordem_tarefas.csv; por padrao fica na pasta de dados do participante"
+    )
+    args = parser.parse_args()
+
+    participante = args.participant
+    if not participante.startswith("P"):
+        participante = "P" + participante
+
+    pasta_dados = os.path.join(args.data_dir, participante)
+    mapping_path = args.mapping or os.path.join(pasta_dados, "ordem_tarefas.csv")
+    ordem = pd.read_csv(mapping_path)
+
+    colunas_necessarias = {"Arquivo", "TarefaReal", "PosicaoExecucao"}
+    colunas_ausentes = colunas_necessarias.difference(ordem.columns)
+    if colunas_ausentes:
+        raise ValueError(
+            "Colunas ausentes em ordem_tarefas.csv: "
+            + ", ".join(sorted(colunas_ausentes))
+        )
+    if "Participante" in ordem.columns:
+        participantes_mapeados = set(ordem.Participante.astype(str))
+        if participantes_mapeados != {participante}:
+            raise ValueError(
+                "O participante do mapeamento nao corresponde a " + participante
+            )
+
+    ordem = ordem.sort_values("PosicaoExecucao")
+    if len(ordem) != 6 or ordem.TarefaReal.nunique() != 6:
+        raise ValueError("ordem_tarefas.csv deve mapear seis tarefas diferentes")
+
+    for _, item_ordem in ordem.iterrows():
+            tarefa = str(item_ordem.TarefaReal)
+            arquivo_posicao = str(item_ordem.Arquivo)
             print(participante)
-            dados_dir = "C:/Users/EASY acadêmico/Documents/demo/data/" + participante + "/" + participante + tarefa + " 1.txt"
-            imagem = "C:/Users/EASY acadêmico/Documents/demo/telas/" + tarefa + ".png"
+            dados_dir = os.path.join(pasta_dados, arquivo_posicao)
+            imagem = os.path.join(args.images_dir, tarefa + ".png")
             df = pd.read_csv(dados_dir)
 
             x = 1920
             y = 1080     
 
-            diretorio = "C:/Users/EASY acadêmico/Documents/demo/graficos/"+participante+"/"+participante + tarefa+"/"
+            diretorio = os.path.join(
+                args.graphs_dir, participante, participante + tarefa
+            ) + os.sep
+            createFolder(diretorio)
 
             dy = correctPointsYaxis(participante, tarefa)
             dx = 0
@@ -472,12 +521,15 @@ def main():
             #computa fixations
             Sfix, Efix = fixation_detection(df.x, df.y, df.tempo)
             
-            with open("C:/Users/EASY acadêmico/Documents/demo/data/"+participante+"/Fixations "+participante+" "+tarefa+".csv", 'w', newline='') as file:
+            fixation_path = os.path.join(
+                pasta_dados, "Fixations " + participante + " " + tarefa + ".csv"
+            )
+            with open(fixation_path, 'w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(["tempo", "tempofinal", "duracao","x", "y"])
                 for i in Efix:
                      writer.writerow(i)
-            dffixation = pd.read_csv("C:/Users/EASY acadêmico/Documents/demo/data/"+participante+"/Fixations "+participante+" "+tarefa+".csv")       
+            dffixation = pd.read_csv(fixation_path)
             
             codigo, linhas_codigo, aoi1, linhas_aoi1, aoi2 = retornaLimitesDasAOIs(tarefa, y)
             
@@ -500,11 +552,8 @@ def main():
 # ============================================================
 # Execution
 # ============================================================
-main()
-
-
-
-
+if __name__ == "__main__":
+    main()
 
 
 

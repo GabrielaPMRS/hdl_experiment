@@ -2,6 +2,9 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$InputPath,
 
+    [Parameter(Mandatory = $true)]
+    [string]$ExperimentJson,
+
     [string]$OutputDirectory = (Join-Path $PSScriptRoot 'dados_separados'),
 
     [string]$Participant = '00',
@@ -13,6 +16,49 @@ $ErrorActionPreference = 'Stop'
 $culture = [Globalization.CultureInfo]::InvariantCulture
 $timeFormat = 'HH:mm:ss:fff'
 $records = [System.Collections.Generic.List[object]]::new()
+$participantCode = if ($Participant -match '^P(.+)$') { $Matches[1] } else { $Participant }
+$participantLabel = "P$participantCode"
+
+if (-not (Test-Path -LiteralPath $ExperimentJson -PathType Leaf)) {
+    throw "JSON do experimento nao encontrado: $ExperimentJson"
+}
+
+$experiment = Get-Content -LiteralPath $ExperimentJson -Raw | ConvertFrom-Json
+if ($experiment -is [array]) {
+    if ($experiment.Count -ne 1) {
+        throw 'O JSON deve conter exatamente uma sessao de participante.'
+    }
+    $experiment = $experiment[0]
+}
+
+$questions = @($experiment.perguntas | Sort-Object { [int]$_.ordemExecucao })
+if ($questions.Count -ne 6) {
+    throw "O JSON possui $($questions.Count) tarefas concluidas; eram esperadas 6."
+}
+
+$executionOrder = [System.Collections.Generic.List[object]]::new()
+for ($position = 1; $position -le 6; $position++) {
+    $question = $questions[$position - 1]
+    if ([int]$question.ordemExecucao -ne $position) {
+        throw "Ordem de execucao invalida no JSON: esperava $position e encontrou $($question.ordemExecucao)."
+    }
+    if ([string]$question.codigoId -notmatch '(\d+)$') {
+        throw "codigoId invalido no JSON: $($question.codigoId)"
+    }
+    $realTask = 'T{0:D2}' -f [int]$Matches[1]
+    $executionOrder.Add([pscustomobject]@{
+        Participante = $participantLabel
+        PosicaoExecucao = $position
+        Arquivo = ('{0}T{1:D2} 1.txt' -f $participantLabel, $position)
+        TarefaReal = $realTask
+        CodigoId = [string]$question.codigoId
+        ParticipanteIdJson = [string]$experiment.participanteId
+    })
+}
+
+if (($executionOrder.TarefaReal | Sort-Object -Unique).Count -ne 6) {
+    throw 'O JSON contem tarefas repetidas ou ausentes.'
+}
 
 $lineNumber = 0
 Get-Content -LiteralPath $InputPath | ForEach-Object {
@@ -55,7 +101,7 @@ $cleaningSummary = [System.Collections.Generic.List[object]]::new()
 for ($task = 1; $task -le 6; $task++) {
     $startIndex = $selectedGaps[$task - 1].AfterIndex
     $endIndex = $selectedGaps[$task].BeforeIndex
-    $name = 'P{0}T{1:D2}.txt' -f $Participant, $task
+    $name = '{0}T{1:D2} 1.txt' -f $participantLabel, $task
     $outputPath = Join-Path $OutputDirectory $name
     $writer = [IO.StreamWriter]::new($outputPath, $false, $utf8WithoutBom)
     $kept = 0
@@ -96,6 +142,7 @@ for ($task = 1; $task -le 6; $task++) {
 }
 
 $cleaningSummary | Export-Csv -LiteralPath (Join-Path $OutputDirectory 'resumo_limpeza.csv') -NoTypeInformation -Encoding utf8
+$executionOrder | Export-Csv -LiteralPath (Join-Path $OutputDirectory 'ordem_tarefas.csv') -NoTypeInformation -Encoding utf8
 
 $selectedGaps | ForEach-Object {
     $before = $records[$_.BeforeIndex]
