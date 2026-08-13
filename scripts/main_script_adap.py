@@ -65,6 +65,7 @@ def fixation_detection(x, y, time, missing=0.0, maxdist=25, mindur=200):
 
 # ============================================================
 # AOI definitions for each task program
+# codigo = [pixel_da_base, pixel_do_topo] eixo y
 # ============================================================
 def retornaLimitesDasAOIs(imgid,y):
     if imgid == "T01":
@@ -106,6 +107,30 @@ def retornaLimitesDasAOIs(imgid,y):
         aoi2 = [0, 0]
 
     return codigo, linhas_codigo, aoi1, linhas_aoi1, aoi2
+
+
+def retornaLimitesDoCodigo(imgid, altura_tela):
+    """Retorna (xmin, xmax, ymin, ymax) no sistema usado pelos graficos.
+
+    Os limites verticais das AOIs foram medidos a partir do topo da tela,
+    enquanto o script inverte o eixo Y dos dados do eye tracker. Por isso os
+    limites tambem precisam ser convertidos com ``altura_tela - y``.
+    """
+    codigo, _, _, _, _ = retornaLimitesDasAOIs(imgid, altura_tela)
+    topo, base = min(codigo), max(codigo)
+    xmin, xmax = 245, 820
+    ymin = altura_tela - base
+    ymax = altura_tela - topo
+    return xmin, xmax, ymin, ymax
+
+
+def filtraFixacoesDoCodigo(df, limites_codigo):
+    """Mantem apenas fixacoes localizadas dentro do painel de codigo."""
+    xmin, xmax, ymin, ymax = limites_codigo
+    return df.loc[
+        df.x.between(xmin, xmax, inclusive="both")
+        & df.y.between(ymin, ymax, inclusive="both")
+    ].copy()
 
 # ============================================================
 # Utilities
@@ -236,12 +261,17 @@ def pairwise(iterable):
     return zip(a, b)
 
 #gera grafico de pontos com duracao de fixacoes de um participante de uma tarefa especifica
-def geraGraficoDePontosFixationTransparenteParaUmPart(df, diretorio, participante, tarefa, x, y, imagem):
+def geraGraficoDePontosFixationTransparenteParaUmPart(
+    df, diretorio, participante, tarefa, x, y, imagem, limites_codigo
+):
     plt.close("all")
     map_img = mpimg.imread(imagem)
     ax = sns.scatterplot(x=df.x, y=df.y, size=df.duracao, alpha = .4 ,edgecolor='none', color = 'red')
-    alteraMargens(ax,0,x,0,y)
-    
+    xmin, xmax, ymin, ymax = limites_codigo
+    alteraMargens(ax, xmin, xmax, ymin, ymax)
+
+    # Mantem a imagem nas coordenadas da tela e usa o eixo como janela de
+    # recorte. Assim as fixacoes nao sao redimensionadas nem deslocadas.
     plt.imshow(map_img, zorder=0, extent=[0.0, x, 0.0, y])
     ax.set_title("Participant: "+participante+ " Task: "+tarefa)
     salvaImagem(plt,diretorio+'Pontos Fixations Transparent('+participante+' '+ tarefa+').png')
@@ -326,11 +356,13 @@ def visualizeScanPath(df, diretorio, participante, tarefa, x, y, imagem):
 #     plt.imshow(map_img, zorder=0, extent=[0.0, x, 0.0, y])
 #     salvaImagem(plt,diretorio+'Heatmap Fix com Duracao ('+ tarefa+').png')
 
-def geraHeatmapBaseadoEmFixacaoDuracao(imagem, diretorio, dfx, dfy, dfduracao, x, y, participante, tarefa, upperBound):
+def geraHeatmapBaseadoEmFixacaoDuracao(
+    imagem, diretorio, dfx, dfy, dfduracao, x, y, participante, tarefa,
+    upperBound, limites_codigo
+):
     plt.close("all")
     map_img = mpimg.imread(imagem)
-    xmin, xmax = 0, x
-    ymin, ymax = 0, y
+    xmin, xmax, ymin, ymax = limites_codigo
     
     # Peform the kernel density estimate
     xx, yy = np.mgrid[xmin:xmax:100j, ymin:ymax:100j]
@@ -377,7 +409,7 @@ def geraHeatmapBaseadoEmFixacaoDuracao(imagem, diretorio, dfx, dfy, dfduracao, x
     ax.imshow(
         map_img,
         zorder=0,
-        extent=[xmin, xmax, ymin, ymax],
+        extent=[0.0, x, 0.0, y],
         aspect='auto'
     )
 
@@ -532,6 +564,18 @@ def main():
             dffixation = pd.read_csv(fixation_path)
             
             codigo, linhas_codigo, aoi1, linhas_aoi1, aoi2 = retornaLimitesDasAOIs(tarefa, y)
+            limites_codigo = retornaLimitesDoCodigo(tarefa, y)
+            dffixation_codigo = filtraFixacoesDoCodigo(
+                dffixation, limites_codigo
+            )
+            print(
+                "Recorte do codigo " + tarefa + ": "
+                + "x={0}..{1}, y={2}..{3}; fixacoes={4}/{5}".format(
+                    *limites_codigo,
+                    len(dffixation_codigo),
+                    len(dffixation)
+                )
+            )
             
             limite_inferior_codigo = codigo[0]
             limite_superior_codigo = codigo[1]
@@ -546,16 +590,27 @@ def main():
             print(tarefa)
             
             # geraGraficoEixoYOneColor(dffixation, diretorio, participante, tarefa, x, y, imagem)
-            geraGraficoDePontosFixationTransparenteParaUmPart(dffixation, diretorio, participante, tarefa, x, y, imagem)
-            geraHeatmapBaseadoEmFixacaoDuracao(imagem, diretorio, dffixation.x, dffixation.y, dffixation.duracao, x, y, participante, tarefa,200)
+            geraGraficoDePontosFixationTransparenteParaUmPart(
+                dffixation_codigo, diretorio, participante, tarefa,
+                x, y, imagem, limites_codigo
+            )
+            if len(dffixation_codigo) >= 2:
+                geraHeatmapBaseadoEmFixacaoDuracao(
+                    imagem, diretorio, dffixation_codigo.x,
+                    dffixation_codigo.y, dffixation_codigo.duracao,
+                    x, y, participante, tarefa, 200, limites_codigo
+                )
+            else:
+                print(
+                    "Heatmap ignorado: menos de duas fixacoes "
+                    "na area do codigo"
+                )
                 
 # ============================================================
 # Execution
 # ============================================================
 if __name__ == "__main__":
     main()
-
-
 
 
 
