@@ -17,6 +17,7 @@ const codeQuestions = [
             01: decoded = 8'd20;
             10: decoded = 8'd30;
             2: decoded = 8'd40;
+            default: decoded = 8'd100;
         endcase
 
         if (enable)
@@ -26,8 +27,8 @@ const codeQuestions = [
     end
 endmodule`,
     question: "Considerando o código, qual é o valor de 'out' quando 'selector' = 10 e 'enable' = 1?",
-    options: ["out = 0", "out = 10", "out = 20", "out = 30", "out = 40"],
-    correctIndex: 4
+    options: ["out = 0", "out = 10", "out = 30", "out = 40", "out = 100"],
+    correctIndex: 3
   },
   {
     id: "code-2",
