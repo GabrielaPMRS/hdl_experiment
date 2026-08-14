@@ -145,10 +145,10 @@ endmodule`,
   {
     id: "code-6",
     title: "Código 6",
-    code: `module testbench;
-
-    logic [3:0] instruction;
-    logic [2:0] opcode;
+    code: `module example (
+    input  logic [3:0] instruction,
+    output logic [2:0] opcode
+);
 
     always_comb begin
         casex (instruction)
@@ -167,7 +167,7 @@ endmodule`,
 endmodule`,
     question: "Considerando o código, qual seria o valor de 'opcode' considerando instruction = 4'bxxxx?",
     options: ["001", "010", "111", "Erro de compilação", "opcode não muda"],
-    correctIndex: 3
+    correctIndex: 0
   }
 ];
 

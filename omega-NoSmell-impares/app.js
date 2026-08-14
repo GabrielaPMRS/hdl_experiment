@@ -146,10 +146,10 @@ endmodule`,
   {
     id: "code-6",
     title: "Código 6",
-    code: `module testbench;
-
-    logic [3:0] instruction;
-    logic [2:0] opcode;
+    code: `module example (
+    input  logic [3:0] instruction,
+    output logic [2:0] opcode
+);
 
     always_comb begin
         case (instruction) inside

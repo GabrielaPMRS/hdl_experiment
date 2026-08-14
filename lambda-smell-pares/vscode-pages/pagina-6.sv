@@ -1,11 +1,7 @@
-///////////////////////////////////////////////////////////////////////////////
-// CLIQUE EM "INICIAR PERGUNTA" ANTES DE ANALISAR O CODIGO
-///////////////////////////////////////////////////////////////////////////////
-
-module testbench;
-
-    logic [3:0] instruction;
-    logic [2:0] opcode;
+module example (
+    input  logic [3:0] instruction,
+    output logic [2:0] opcode
+);
 
     always_comb begin
         casex (instruction)
@@ -21,4 +17,9 @@ module testbench;
 
         endcase
     end
+
 endmodule
+
+correct answer:
+instruction = 4'bxxxx
+opcode = 3'b001
