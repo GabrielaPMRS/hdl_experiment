@@ -94,20 +94,26 @@ endmodule`,
   {
     id: "code-4",
     title: "Código 4",
-    code: `module example;
+    code: `module example (
+    input  logic enable,
+    output int   out
+);
 
-    byte in;
-    int out;
+    int result;
+    byte in = -5;
 
-    initial begin
-        in = -5;
-        out = in + 1'b1;
+    always_comb begin
+        result = in + 1'b1;
+
+        if (enable)
+            out = result;
+        else
+            out = in;
     end
-
 endmodule`,
-    question: "Considerando o código, qual seria o valor de saída de out?",
-    options: ["out = 252", "out = -6", "out = 251", "out = -4", "out = 4"],
-    correctIndex: 0
+    question: "Considerando o código, qual seria o valor de 'out' quando 'enable' = 1?",
+    options: ["out = -4", "out = 251", "out = 4", "out = 252", "Erro de compilação"],
+    correctIndex: 3
   },
   {
     id: "code-5",
