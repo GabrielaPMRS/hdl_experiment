@@ -4,14 +4,22 @@
 
 module mux (
     input logic [1:0] selector,
+    input logic enable,
     output logic [7:0] out
 );
+    logic [7:0] decoded;
+
     always_comb begin
         case (selector)
-            0: out = 8'd10;
-            01: out = 8'd20;
-            10: out = 8'd30;
-            2: out = 8'd40;
+            0: decoded = 8'd10;
+            01: decoded = 8'd20;
+            10: decoded = 8'd30;
+            2: decoded = 8'd40;
         endcase
+
+        if (enable)
+            out = decoded;
+        else
+            out = 8'd0;
     end
 endmodule

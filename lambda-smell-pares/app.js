@@ -6,20 +6,28 @@ const codeQuestions = [
     title: "Código 1",
     code: `module mux (
     input logic [1:0] selector,
+    input logic enable,
     output logic [7:0] out
 );
+    logic [7:0] decoded;
+
     always_comb begin
         case (selector)
-            0: out = 8'd10;
-            01: out = 8'd20;
-            10: out = 8'd30;
-            2: out = 8'd40;
+            0: decoded = 8'd10;
+            01: decoded = 8'd20;
+            10: decoded = 8'd30;
+            2: decoded = 8'd40;
         endcase
+
+        if (enable)
+            out = decoded;
+        else
+            out = 8'd0;
     end
 endmodule`,
-    question: "Considerando o código, qual é o valor de 'out' quando 'selector' = 10?",
-    options: ["out = 10", "out = 20", "out = 30", "out = 40", "out não muda"],
-    correctIndex: 3
+    question: "Considerando o código, qual é o valor de 'out' quando 'selector' = 10 e 'enable' = 1?",
+    options: ["out = 0", "out = 10", "out = 20", "out = 30", "out = 40"],
+    correctIndex: 4
   },
   {
     id: "code-2",
@@ -101,19 +109,25 @@ endmodule`,
 
     int lo, med, hi;
     bit result;
+    int selected;
 
     initial begin
         lo = 20;
         med = 224;
         hi = 164;
 
-        result = lo < med < hi;
+        result = (lo < med < hi);
+
+        if (result)
+            selected = med;
+        else
+            selected = hi;
     end
 
 endmodule`,
-    question: "Considerando o código, qual seria o valor de saída de result?",
-    options: ["result = 0", "result = 1", "result = 20", "result = 135", "Erro de compilação"],
-    correctIndex: 1
+    question: "Considerando o código, qual seria o valor de 'selected'?",
+    options: ["selected = 20", "selected = 164", "selected = 224", "selected = 1", "Erro de compilação"],
+    correctIndex: 2
   },
   {
     id: "code-6",

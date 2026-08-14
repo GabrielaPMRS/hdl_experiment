@@ -1,7 +1,3 @@
-///////////////////////////////////////////////////////////////////////////////
-// CLIQUE EM "INICIAR PERGUNTA" ANTES DE ANALISAR O CODIGO
-///////////////////////////////////////////////////////////////////////////////
-
 module example;
 
     int lo, med, hi;
@@ -18,7 +14,9 @@ module example;
         if (result)
             selected = med;
         else
-            selected = lo;
+            selected = hi;
     end
 
 endmodule
+
+correct answer: result = 1, selected = 224
