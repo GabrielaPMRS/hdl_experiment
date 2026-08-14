@@ -61,12 +61,14 @@ endmodule`,
   {
     id: "code-3",
     title: "Código 3",
-    code: `module testbench;
+    code: `module example;
 
     function int maxx(int a, int b);
         int max = a;
+
         if (b > max)
             max = b;
+
         return max;
     endfunction
 
@@ -81,13 +83,13 @@ endmodule`,
 endmodule`,
     question: "Considerando o código, quais seriam os valores correspondentes de r1, r2 e r3, respectivamente?",
     options: [
-      "r1 = 2\nr2 = 2\nr3 = 2",
-      "r1 = 7\nr2 = 7\nr3 = 7",
-      "r1 = 0\nr2 = 0\nr3 = 0",
       "r1 = 7\nr2 = 2\nr3 = 0",
-      "r1 = 3\nr2 = 1\nr3 = 0"
+      "r1 = 3\nr2 = 1\nr3 = 0",
+      "r1 = 7\nr2 = 7\nr3 = 7",
+      "r1 = 2\nr2 = 2\nr3 = 2",
+      "r1 = 0\nr2 = 0\nr3 = 0"
     ],
-    correctIndex: 1
+    correctIndex: 2
   },
   {
     id: "code-4",

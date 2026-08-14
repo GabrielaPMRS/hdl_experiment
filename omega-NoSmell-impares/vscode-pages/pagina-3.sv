@@ -1,13 +1,11 @@
-///////////////////////////////////////////////////////////////////////////////
-// CLIQUE EM "INICIAR PERGUNTA" ANTES DE ANALISAR O CODIGO
-///////////////////////////////////////////////////////////////////////////////
-
-module testbench;
+module example;
 
     function automatic int maxx(int a, int b);
         int max = a;
+
         if (b > max)
             max = b;
+
         return max;
     endfunction
 
@@ -20,3 +18,8 @@ module testbench;
     end
 
 endmodule
+
+correct answer:
+maxx(3, 7) = r1 = 7
+maxx(1, 2) = r2 = 2
+maxx(0, 0) = r3 = 0
