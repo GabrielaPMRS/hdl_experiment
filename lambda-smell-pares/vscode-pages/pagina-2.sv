@@ -1,15 +1,20 @@
-///////////////////////////////////////////////////////////////////////////////
-// CLIQUE EM "INICIAR PERGUNTA" ANTES DE ANALISAR O CODIGO
-///////////////////////////////////////////////////////////////////////////////
+module top (
+    output logic [31:0] out0,
+    output logic [31:0] out1
+);
 
-module top(output logic [1:0][31:0] A);
+    logic [1:0][31:0] A;
+
     initial begin
         A = '{1'b1, 1'b1};
+
+        out0 = A[0];
+        out1 = A[1];
     end
+
 endmodule
 
-module tb;
-...
-$display("A[0] = %b", A[0]);
-$display("A[1] = %b", A[1]);
-...
+
+correct answer:
+out0 = 00000000000000000000000000000001
+out1 = 00000000000000000000000000000001
