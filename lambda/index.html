@@ -25,6 +25,10 @@
         </div>
 
         <form id="demographic-form" class="form-block">
+          <label class="field">
+            <span>Código do participante</span>
+            <input name="participanteCodigo" type="text" inputmode="numeric" pattern="(?:P)?\d+" placeholder="Ex.: 00 ou P00" required>
+          </label>
           <h2>Perguntas demográficas</h2>
           <p>Antes de iniciar o experimento, gostaríamos de fazer algumas perguntas sobre sua experiência. Essas informações ajudarão na análise dos resultados.</p>
 
@@ -63,9 +67,8 @@
         </form>
       </section>
 
-      <section class="panel centered-screen hidden" id="eye-break-screen" aria-labelledby="eye-break-title">
-        <h1 id="eye-break-title">Feche os olhos</h1>
-        <button class="primary-button" id="eye-break-next" type="button">Continuar</button>
+      <section class="panel centered-screen hidden" id="eye-break-screen" aria-label="Pausa entre tarefas">
+        <div class="eye-icon" aria-hidden="true"></div>
       </section>
 
       <section class="panel hidden" id="question-screen" aria-labelledby="question-title">

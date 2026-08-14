@@ -146,7 +146,7 @@ endmodule`,
 
 const storageKey = `hdl-systemverilog-survey-results-${experimentVersion}`;
 const session = {
-  participantId: crypto.randomUUID ? crypto.randomUUID() : `participant-${Date.now()}`,
+  participantId: null,
   demographics: {},
   order: [],
   responses: [],
@@ -159,7 +159,6 @@ const session = {
 
 const introScreen = document.querySelector("#intro-screen");
 const eyeBreakScreen = document.querySelector("#eye-break-screen");
-const eyeBreakNext = document.querySelector("#eye-break-next");
 const questionScreen = document.querySelector("#question-screen");
 const completeScreen = document.querySelector("#complete-screen");
 const demographicForm = document.querySelector("#demographic-form");
@@ -176,6 +175,8 @@ const nextButton = document.querySelector("#next-button");
 const downloadJson = document.querySelector("#download-json");
 const downloadCsv = document.querySelector("#download-csv");
 let eyeBreakNextStep = null;
+let eyeBreakTimer = null;
+let audioContext = null;
 
 function shuffle(items) {
   const copy = [...items];
@@ -196,9 +197,48 @@ function showScreen(screen) {
   fitVisibleScreen();
 }
 
+function normalizeParticipantCode(value) {
+  const digits = String(value).trim().replace(/^P/i, "");
+  return `P${digits}`;
+}
+
 function showEyeBreak(nextStep) {
+  clearInterval(eyeBreakTimer);
   eyeBreakNextStep = nextStep;
   showScreen(eyeBreakScreen);
+
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (AudioContext) {
+    audioContext ??= new AudioContext();
+    audioContext.resume();
+  }
+
+  let secondsRemaining = 7;
+  eyeBreakTimer = setInterval(() => {
+    secondsRemaining -= 1;
+    if (secondsRemaining > 0) return;
+
+    clearInterval(eyeBreakTimer);
+    playReadySignal();
+    setTimeout(() => {
+      const step = eyeBreakNextStep;
+      eyeBreakNextStep = null;
+      step?.();
+    }, 400);
+  }, 1000);
+}
+
+function playReadySignal() {
+  if (!audioContext) return;
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  oscillator.type = "sine";
+  oscillator.frequency.value = 880;
+  gain.gain.setValueAtTime(0.18, audioContext.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.25);
+  oscillator.connect(gain).connect(audioContext.destination);
+  oscillator.start();
+  oscillator.stop(audioContext.currentTime + 0.25);
 }
 
 function fitVisibleScreen() {
@@ -283,6 +323,7 @@ function startSurvey(event) {
 
   const data = new FormData(demographicForm);
   session.demographics = Object.fromEntries(data.entries());
+  session.participantId = normalizeParticipantCode(session.demographics.participanteCodigo);
   session.order = shuffle(codeQuestions);
   session.responses = [];
   session.currentIndex = 0;
@@ -331,6 +372,7 @@ function submitAnswer(event) {
 
   session.completedAt = new Date().toISOString();
   persistSession();
+  downloadJsonResult();
   showEyeBreak(() => showScreen(completeScreen));
 }
 
@@ -344,6 +386,14 @@ function downloadFile(filename, content, type) {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+
+function downloadJsonResult() {
+  downloadFile(
+    `resultado${session.participantId}.json`,
+    JSON.stringify(buildResultPayload(), null, 2),
+    "application/json"
+  );
 }
 
 function csvEscape(value) {
@@ -387,14 +437,9 @@ function buildCsv() {
 
 demographicForm.addEventListener("submit", startSurvey);
 answerForm.addEventListener("submit", submitAnswer);
-eyeBreakNext.addEventListener("click", () => {
-  const nextStep = eyeBreakNextStep;
-  eyeBreakNextStep = null;
-  nextStep?.();
-});
 downloadJson.addEventListener("click", () => {
-  downloadFile(`experimento-hdl-${experimentVersion}-${session.participantId}.json`, JSON.stringify(buildResultPayload(), null, 2), "application/json");
+  downloadJsonResult();
 });
 downloadCsv.addEventListener("click", () => {
-  downloadFile(`experimento-hdl-${experimentVersion}-${session.participantId}.csv`, buildCsv(), "text/csv");
+  downloadFile(`resultado${session.participantId}.csv`, buildCsv(), "text/csv");
 });
