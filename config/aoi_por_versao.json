@@ -1,0 +1,18 @@
+{
+  "lambda": {
+    "T01": { "codigo": null, "linhasCodigo": [], "aoi1": null, "linhasAoi1": [], "aoi2": null },
+    "T02": { "codigo": null, "linhasCodigo": [], "aoi1": null, "linhasAoi1": [], "aoi2": null },
+    "T03": { "codigo": null, "linhasCodigo": [], "aoi1": null, "linhasAoi1": [], "aoi2": null },
+    "T04": { "codigo": null, "linhasCodigo": [], "aoi1": null, "linhasAoi1": [], "aoi2": null },
+    "T05": { "codigo": null, "linhasCodigo": [], "aoi1": null, "linhasAoi1": [], "aoi2": null },
+    "T06": { "codigo": null, "linhasCodigo": [], "aoi1": null, "linhasAoi1": [], "aoi2": null }
+  },
+  "omega": {
+    "T01": { "codigo": null, "linhasCodigo": [], "aoi1": null, "linhasAoi1": [], "aoi2": null },
+    "T02": { "codigo": null, "linhasCodigo": [], "aoi1": null, "linhasAoi1": [], "aoi2": null },
+    "T03": { "codigo": null, "linhasCodigo": [], "aoi1": null, "linhasAoi1": [], "aoi2": null },
+    "T04": { "codigo": null, "linhasCodigo": [], "aoi1": null, "linhasAoi1": [], "aoi2": null },
+    "T05": { "codigo": null, "linhasCodigo": [], "aoi1": null, "linhasAoi1": [], "aoi2": null },
+    "T06": { "codigo": null, "linhasCodigo": [], "aoi1": null, "linhasAoi1": [], "aoi2": null }
+  }
+}

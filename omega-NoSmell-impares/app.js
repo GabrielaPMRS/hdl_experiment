@@ -206,6 +206,13 @@ let eyeBreakNextStep = null;
 let eyeBreakTimer = null;
 let audioContext = null;
 
+const participantFromUrl = new URLSearchParams(window.location.search).get("participante");
+const participantCodeInput = demographicForm.elements.namedItem("participanteCodigo");
+if (participantFromUrl && participantCodeInput) {
+  participantCodeInput.value = participantFromUrl;
+  participantCodeInput.readOnly = true;
+}
+
 function shuffle(items) {
   const copy = [...items];
   for (let index = copy.length - 1; index > 0; index -= 1) {
