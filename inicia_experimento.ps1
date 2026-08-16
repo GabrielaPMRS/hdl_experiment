@@ -98,9 +98,37 @@ if (-not $BrowserExecutable -or -not (Test-Path -LiteralPath $BrowserExecutable 
     throw 'Chrome ou Edge nao encontrado. Informe o navegador com -BrowserExecutable.'
 }
 
+$browserProfilesDirectory = Join-Path $demoDirectory 'perfis_navegador'
+$browserProfileDirectory = Join-Path $browserProfilesDirectory $participantLabel
+$defaultBrowserProfileDirectory = Join-Path $browserProfileDirectory 'Default'
+$browserPreferencesPath = Join-Path $defaultBrowserProfileDirectory 'Preferences'
+New-Item -ItemType Directory -Path $defaultBrowserProfileDirectory -Force | Out-Null
+
+$browserPreferences = @{
+    download = @{
+        default_directory = $participantDirectory
+        directory_upgrade = $true
+        prompt_for_download = $false
+    }
+    profile = @{
+        default_content_setting_values = @{
+            automatic_downloads = 1
+        }
+    }
+} | ConvertTo-Json -Depth 6
+
+[IO.File]::WriteAllText(
+    $browserPreferencesPath,
+    $browserPreferences,
+    [Text.UTF8Encoding]::new($false)
+)
+
 Start-Process `
     -FilePath $BrowserExecutable `
     -ArgumentList @(
+        ('--user-data-dir="{0}"' -f $browserProfileDirectory),
+        '--no-first-run',
+        '--no-default-browser-check',
         '--new-window',
         ('"{0}"' -f $applicationUri)
     )
@@ -111,4 +139,5 @@ Write-Host "Versao: $experimentVersion"
 Write-Host "Eye tracker: $eyeTrackerFile"
 Write-Host "Navegador: $BrowserExecutable"
 Write-Host 'A aplicacao foi aberta no navegador.'
+Write-Host "O JSON sera salvo automaticamente em: $resultFile"
 Write-Host 'Ao terminar o experimento, pressione uma tecla na janela do eye tracker para encerrar a coleta.'
