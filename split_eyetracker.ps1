@@ -109,6 +109,17 @@ $cleaningSummary = [System.Collections.Generic.List[object]]::new()
 for ($task = 1; $task -le 6; $task++) {
     $startIndex = $selectedGaps[$task - 1].AfterIndex
     $endIndex = $selectedGaps[$task].BeforeIndex
+    $startRecord = $records[$startIndex]
+    $endRecord = $records[$endIndex]
+    $eyeTrackerDurationSeconds = ($endRecord.Time - $startRecord.Time).TotalSeconds
+    if ($eyeTrackerDurationSeconds -lt 0) {
+        $eyeTrackerDurationSeconds += 86400
+    }
+
+    $executionOrder[$task - 1] | Add-Member -NotePropertyName InicioEyeTracker -NotePropertyValue $startRecord.Time.ToString($timeFormat)
+    $executionOrder[$task - 1] | Add-Member -NotePropertyName FimEyeTracker -NotePropertyValue $endRecord.Time.ToString($timeFormat)
+    $executionOrder[$task - 1] | Add-Member -NotePropertyName SegundosEyeTracker -NotePropertyValue ([math]::Round($eyeTrackerDurationSeconds, 3))
+
     $name = '{0}T{1:D2} 1.txt' -f $participantLabel, $task
     $outputPath = Join-Path $OutputDirectory $name
     $writer = [IO.StreamWriter]::new($outputPath, $false, $utf8WithoutBom)
@@ -150,7 +161,7 @@ for ($task = 1; $task -le 6; $task++) {
 }
 
 $cleaningSummary | Export-Csv -LiteralPath (Join-Path $OutputDirectory 'resumo_limpeza.csv') -NoTypeInformation -Encoding utf8
-$executionOrder | Export-Csv -LiteralPath (Join-Path $OutputDirectory 'ordem_tarefas.csv') -NoTypeInformation -Encoding utf8
+$executionOrder | Export-Csv -LiteralPath (Join-Path $OutputDirectory 'resumo_tarefas.csv') -NoTypeInformation -Encoding utf8
 
 $selectedGaps | ForEach-Object {
     $before = $records[$_.BeforeIndex]

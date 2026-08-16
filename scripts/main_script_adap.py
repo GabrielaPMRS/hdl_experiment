@@ -487,8 +487,10 @@ def main():
         default="C:/Users/EASY acadêmico/Documents/demo/graficos"
     )
     parser.add_argument(
+        "--task-summary",
         "--mapping",
-        help="ordem_tarefas.csv; por padrao fica na pasta de dados do participante"
+        dest="task_summary",
+        help="resumo_tarefas.csv; por padrao fica na pasta de dados do participante"
     )
     parser.add_argument(
         "--aoi-config",
@@ -506,8 +508,10 @@ def main():
         participante = "P" + participante
 
     pasta_dados = os.path.join(args.data_dir, participante)
-    mapping_path = args.mapping or os.path.join(pasta_dados, "ordem_tarefas.csv")
-    ordem = pd.read_csv(mapping_path)
+    task_summary_path = args.task_summary or os.path.join(
+        pasta_dados, "resumo_tarefas.csv"
+    )
+    ordem = pd.read_csv(task_summary_path)
 
     colunas_necessarias = {
         "Arquivo", "TarefaReal", "PosicaoExecucao", "VersaoExperimento"
@@ -515,7 +519,7 @@ def main():
     colunas_ausentes = colunas_necessarias.difference(ordem.columns)
     if colunas_ausentes:
         raise ValueError(
-            "Colunas ausentes em ordem_tarefas.csv: "
+            "Colunas ausentes em resumo_tarefas.csv: "
             + ", ".join(sorted(colunas_ausentes))
         )
     if "Participante" in ordem.columns:
@@ -527,7 +531,7 @@ def main():
 
     ordem = ordem.sort_values("PosicaoExecucao")
     if len(ordem) != 6 or ordem.TarefaReal.nunique() != 6:
-        raise ValueError("ordem_tarefas.csv deve mapear seis tarefas diferentes")
+        raise ValueError("resumo_tarefas.csv deve mapear seis tarefas diferentes")
     versoes = set(ordem.VersaoExperimento.astype(str).str.lower())
     if len(versoes) != 1 or not versoes.issubset({"lambda", "omega"}):
         raise ValueError("A versao do experimento deve ser somente lambda ou omega")
@@ -628,4 +632,3 @@ def main():
 # ============================================================
 if __name__ == "__main__":
     main()
-

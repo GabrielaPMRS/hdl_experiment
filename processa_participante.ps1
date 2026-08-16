@@ -22,7 +22,7 @@ $DataDirectory = Join-Path $demoDirectory 'data'
 $ImagesDirectory = Join-Path $demoDirectory 'telas'
 $GraphsDirectory = Join-Path $demoDirectory 'graficos'
 $participantDirectory = Join-Path $DataDirectory $participantLabel
-$mappingPath = Join-Path $participantDirectory 'ordem_tarefas.csv'
+$taskSummaryPath = Join-Path $participantDirectory 'resumo_tarefas.csv'
 $splitScript = Join-Path $PSScriptRoot 'split_eyetracker.ps1'
 $mainScript = Join-Path $PSScriptRoot 'scripts\main_script_adap.py'
 
@@ -47,7 +47,7 @@ if (-not (Test-Path -LiteralPath $ExperimentJson -PathType Leaf)) {
     --data-dir $DataDirectory `
     --images-dir $ImagesDirectory `
     --graphs-dir $GraphsDirectory `
-    --mapping $mappingPath
+    --task-summary $taskSummaryPath
 
 if ($LASTEXITCODE -ne 0) {
     throw "A geracao dos graficos falhou com codigo $LASTEXITCODE."
