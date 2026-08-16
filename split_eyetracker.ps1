@@ -36,6 +36,11 @@ if ($questions.Count -ne 6) {
     throw "O JSON possui $($questions.Count) tarefas concluidas; eram esperadas 6."
 }
 
+$experimentVersion = ([string]$experiment.versaoExperimento).ToLowerInvariant()
+if ($experimentVersion -notin @('lambda', 'omega')) {
+    throw "Versao do experimento invalida no JSON: $experimentVersion"
+}
+
 $executionOrder = [System.Collections.Generic.List[object]]::new()
 for ($position = 1; $position -le 6; $position++) {
     $question = $questions[$position - 1]
@@ -48,10 +53,13 @@ for ($position = 1; $position -le 6; $position++) {
     $realTask = 'T{0:D2}' -f [int]$Matches[1]
     $executionOrder.Add([pscustomobject]@{
         Participante = $participantLabel
+        VersaoExperimento = $experimentVersion
         PosicaoExecucao = $position
         Arquivo = ('{0}T{1:D2} 1.txt' -f $participantLabel, $position)
         TarefaReal = $realTask
         CodigoId = [string]$question.codigoId
+        SegundosAplicacao = [double]$question.segundos
+        Tentativas = [int]$question.tentativas
         ParticipanteIdJson = [string]$experiment.participanteId
     })
 }

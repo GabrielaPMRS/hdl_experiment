@@ -3,6 +3,7 @@
 # =========================
 import os
 import csv
+import json
 import argparse
 import statistics
 from itertools import tee
@@ -64,59 +65,54 @@ def fixation_detection(x, y, time, missing=0.0, maxdist=25, mindur=200):
 
 
 # ============================================================
-# AOI definitions for each task program
+# AOI definitions for each experiment version and task program
 # codigo = [pixel_da_base, pixel_do_topo] eixo y
 # ============================================================
-def retornaLimitesDasAOIs(imgid,y):
-    if imgid == "T01":
-        codigo = [545,180]
-        linhas_codigo = [535, 508, 481, 457, 430, 402, 375, 349, 322, 294, 267, 239, 213]
-        aoi1 = [483, 320]
-        linhas_aoi1 = [457, 430, 402, 375, 349]
-        aoi2 = [0, 0]
-    elif imgid == "T02":
-        codigo = [495,180]
-        linhas_codigo = [481, 458, 430, 399, 375, 318, 291, 267, 240, 213]
-        aoi1 = [268, 240]
-        linhas_aoi1 = [267, 240]
-        aoi2 = [0, 0]
-    elif imgid == "T03":
-        codigo = [690,180]
-        linhas_codigo = [671, 617, 593, 566, 538, 484, 458, 399, 375, 348, 322, 294, 267, 212]
-        aoi1 = [592, 500]
-        linhas_aoi1 = [593, 566, 538, 484]
-        aoi2 = [265, 235]
-        # linhas_aoi2 = [267, 212]
-    elif imgid == "T04":
-        codigo = [490,180]
-        linhas_codigo = [480, 427, 402, 376, 349, 294, 266, 212]
-        aoi1 = [400, 345]
-        linhas_aoi1 = [402, 376]
-        aoi2 = [0, 0]
-    elif imgid == "T05":
-        codigo = [575,180]
-        linhas_codigo = [563, 508, 481, 427, 399, 372, 345, 291, 263, 212]
-        aoi1 = [483, 350]
-        linhas_aoi1 = [481, 427, 399, 372]
-        aoi2 = [0, 0]
-    elif imgid == "T06":
-        codigo = [745,180]
-        linhas_codigo = [726, 698, 671, 620, 590, 539, 508, 458, 427, 372, 349, 295, 267, 212]
-        aoi1 = [640, 348]
-        linhas_aoi1 = [620, 590, 539, 508, 458, 427, 372]
+def carregaConfiguracaoDasAOIs(caminho):
+    with open(caminho, encoding="utf-8") as arquivo:
+        configuracao = json.load(arquivo)
+
+    for versao in ("lambda", "omega"):
+        if versao not in configuracao:
+            raise ValueError("Versao ausente no arquivo de AOIs: " + versao)
+        for numero in range(1, 7):
+            tarefa = "T{0:02d}".format(numero)
+            if tarefa not in configuracao[versao]:
+                raise ValueError("AOI ausente: " + versao + "/" + tarefa)
+
+    return configuracao
+
+
+def retornaLimitesDasAOIs(configuracao, versao, imgid):
+    try:
+        dados = configuracao[versao][imgid]
+    except KeyError as erro:
+        raise ValueError("AOI nao encontrada: " + versao + "/" + imgid) from erro
+
+    codigo = dados.get("codigo")
+    aoi1 = dados.get("aoi1")
+    if not isinstance(codigo, list) or len(codigo) != 2 or None in codigo:
+        raise ValueError("Limite do codigo incompleto: " + versao + "/" + imgid)
+    if not isinstance(aoi1, list) or len(aoi1) != 2 or None in aoi1:
+        raise ValueError("AOI1 incompleta: " + versao + "/" + imgid)
+
+    linhas_codigo = dados.get("linhasCodigo", [])
+    linhas_aoi1 = dados.get("linhasAoi1", [])
+    aoi2 = dados.get("aoi2")
+    if not isinstance(aoi2, list) or len(aoi2) != 2 or None in aoi2:
         aoi2 = [0, 0]
 
     return codigo, linhas_codigo, aoi1, linhas_aoi1, aoi2
 
 
-def retornaLimitesDoCodigo(imgid, altura_tela):
+def retornaLimitesDoCodigo(configuracao, versao, imgid, altura_tela):
     """Retorna (xmin, xmax, ymin, ymax) no sistema usado pelos graficos.
 
     Os limites verticais das AOIs foram medidos a partir do topo da tela,
     enquanto o script inverte o eixo Y dos dados do eye tracker. Por isso os
     limites tambem precisam ser convertidos com ``altura_tela - y``.
     """
-    codigo, _, _, _, _ = retornaLimitesDasAOIs(imgid, altura_tela)
+    codigo, _, _, _, _ = retornaLimitesDasAOIs(configuracao, versao, imgid)
     topo, base = min(codigo), max(codigo)
     xmin, xmax = 245, 820
     ymin = altura_tela - base
@@ -494,7 +490,16 @@ def main():
         "--mapping",
         help="ordem_tarefas.csv; por padrao fica na pasta de dados do participante"
     )
+    parser.add_argument(
+        "--aoi-config",
+        default=os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "config",
+            "aoi_por_versao.json"
+        )
+    )
     args = parser.parse_args()
+    configuracao_aoi = carregaConfiguracaoDasAOIs(args.aoi_config)
 
     participante = args.participant
     if not participante.startswith("P"):
@@ -504,7 +509,9 @@ def main():
     mapping_path = args.mapping or os.path.join(pasta_dados, "ordem_tarefas.csv")
     ordem = pd.read_csv(mapping_path)
 
-    colunas_necessarias = {"Arquivo", "TarefaReal", "PosicaoExecucao"}
+    colunas_necessarias = {
+        "Arquivo", "TarefaReal", "PosicaoExecucao", "VersaoExperimento"
+    }
     colunas_ausentes = colunas_necessarias.difference(ordem.columns)
     if colunas_ausentes:
         raise ValueError(
@@ -521,13 +528,19 @@ def main():
     ordem = ordem.sort_values("PosicaoExecucao")
     if len(ordem) != 6 or ordem.TarefaReal.nunique() != 6:
         raise ValueError("ordem_tarefas.csv deve mapear seis tarefas diferentes")
+    versoes = set(ordem.VersaoExperimento.astype(str).str.lower())
+    if len(versoes) != 1 or not versoes.issubset({"lambda", "omega"}):
+        raise ValueError("A versao do experimento deve ser somente lambda ou omega")
 
     for _, item_ordem in ordem.iterrows():
             tarefa = str(item_ordem.TarefaReal)
+            versao = str(item_ordem.VersaoExperimento).lower()
             arquivo_posicao = str(item_ordem.Arquivo)
             print(participante)
             dados_dir = os.path.join(pasta_dados, arquivo_posicao)
-            imagem = os.path.join(args.images_dir, tarefa + ".png")
+            imagem = os.path.join(args.images_dir, versao, tarefa + ".png")
+            if not os.path.isfile(imagem):
+                raise FileNotFoundError("Tela nao encontrada: " + imagem)
             df = pd.read_csv(dados_dir)
 
             x = 1920
@@ -563,8 +576,12 @@ def main():
                      writer.writerow(i)
             dffixation = pd.read_csv(fixation_path)
             
-            codigo, linhas_codigo, aoi1, linhas_aoi1, aoi2 = retornaLimitesDasAOIs(tarefa, y)
-            limites_codigo = retornaLimitesDoCodigo(tarefa, y)
+            codigo, linhas_codigo, aoi1, linhas_aoi1, aoi2 = retornaLimitesDasAOIs(
+                configuracao_aoi, versao, tarefa
+            )
+            limites_codigo = retornaLimitesDoCodigo(
+                configuracao_aoi, versao, tarefa, y
+            )
             dffixation_codigo = filtraFixacoesDoCodigo(
                 dffixation, limites_codigo
             )
@@ -611,6 +628,4 @@ def main():
 # ============================================================
 if __name__ == "__main__":
     main()
-
-
 
