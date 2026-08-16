@@ -5,7 +5,8 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$ExperimentJson,
 
-    [string]$OutputDirectory = (Join-Path $PSScriptRoot 'dados_separados'),
+    [Parameter(Mandatory = $true)]
+    [string]$OutputDirectory,
 
     [string]$Participant = '00',
 

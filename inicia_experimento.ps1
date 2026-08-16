@@ -28,8 +28,8 @@ $experimentVersion = if ($participantNumber % 2 -eq 0) {
 }
 
 $applicationDirectory = switch ($experimentVersion) {
-    'lambda' { Join-Path $PSScriptRoot 'lambda-smell-pares' }
-    'omega'  { Join-Path $PSScriptRoot 'omega-NoSmell-impares' }
+    'lambda' { Join-Path $PSScriptRoot 'lambda' }
+    'omega'  { Join-Path $PSScriptRoot 'omega' }
     default  { throw "Versao de experimento desconhecida: $experimentVersion" }
 }
 

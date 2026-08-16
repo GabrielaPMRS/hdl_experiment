@@ -23,7 +23,7 @@ $ImagesDirectory = Join-Path $demoDirectory 'telas'
 $GraphsDirectory = Join-Path $demoDirectory 'graficos'
 $participantDirectory = Join-Path $DataDirectory $participantLabel
 $taskSummaryPath = Join-Path $participantDirectory 'resumo_tarefas.csv'
-$splitScript = Join-Path $PSScriptRoot 'split_eyetracker.ps1'
+$splitScript = Join-Path $PSScriptRoot 'scripts\split_eyetracker.ps1'
 $mainScript = Join-Path $PSScriptRoot 'scripts\main_script_adap.py'
 
 New-Item -ItemType Directory -Path $participantDirectory -Force | Out-Null
