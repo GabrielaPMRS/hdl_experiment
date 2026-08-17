@@ -124,28 +124,25 @@ for ($task = 1; $task -le 6; $task++) {
     $name = '{0}T{1:D2} 1.txt' -f $participantLabel, $task
     $outputPath = Join-Path $OutputDirectory $name
     $writer = [IO.StreamWriter]::new($outputPath, $false, $utf8WithoutBom)
-    $kept = 0
-    $removedNegativeX = 0
-    $removedNegativeY = 0
-    $removedXAtOrAbove820 = 0
+    $written = 0
+    $negativeXRows = 0
+    $negativeYRows = 0
+    $xAtOrAbove820Rows = 0
     try {
         $writer.WriteLine('x,y,tempo')
         for ($index = $startIndex; $index -le $endIndex; $index++) {
             $record = $records[$index]
             if ($record.X -lt 0) {
-                $removedNegativeX++
-                continue
+                $negativeXRows++
             }
             if ($record.Y -lt 0) {
-                $removedNegativeY++
-                continue
+                $negativeYRows++
             }
             if ($record.X -ge 820) {
-                $removedXAtOrAbove820++
-                continue
+                $xAtOrAbove820Rows++
             }
             $writer.WriteLine($record.Text)
-            $kept++
+            $written++
         }
     }
     finally {
@@ -154,10 +151,10 @@ for ($task = 1; $task -le 6; $task++) {
     $cleaningSummary.Add([pscustomobject]@{
         File = $name
         OriginalRows = $endIndex - $startIndex + 1
-        KeptRows = $kept
-        RemovedNegativeX = $removedNegativeX
-        RemovedNegativeY = $removedNegativeY
-        RemovedXAtOrAbove820 = $removedXAtOrAbove820
+        WrittenRows = $written
+        NegativeXRows = $negativeXRows
+        NegativeYRows = $negativeYRows
+        XAtOrAbove820Rows = $xAtOrAbove820Rows
     })
 }
 

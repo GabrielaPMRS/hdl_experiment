@@ -128,6 +128,21 @@ def filtraFixacoesDoCodigo(df, limites_codigo):
         & df.y.between(ymin, ymax, inclusive="both")
     ].copy()
 
+
+def fixacoesSuportamKde(df):
+    """KDE 2D requer pelo menos tres pontos que nao sejam colineares."""
+    if len(df) < 3:
+        return False
+    valores = np.vstack([
+        df.x.to_numpy(dtype=float),
+        df.y.to_numpy(dtype=float)
+    ])
+    covariancia = np.cov(
+        valores,
+        aweights=df.duracao.to_numpy(dtype=float)
+    )
+    return np.isfinite(covariancia).all() and np.linalg.matrix_rank(covariancia) == 2
+
 # ============================================================
 # Utilities
 # ============================================================
@@ -147,6 +162,8 @@ def alteraMargens(ax,iniX,fimX,iniY,fimY):
     ax.set(ylim=(iniY, fimY))
 
 def converteTempoParaSegundos(df):
+    if df.empty:
+        raise ValueError("O arquivo da tarefa nao possui registros do eye tracker")
     for i in range(0, len(df.index)):
         string = df.tempo[i]
         lista = string.split(":")
@@ -157,7 +174,7 @@ def converteTempoParaSegundos(df):
     df.tempo = df.tempo.values.astype(np.int64)
     # assumimos que o 1o valor e o menor do tempo. 
     # Dividimos por 1000 para considerarmos em segundos
-    df.tempo = (df.tempo - df.tempo[0])/1000    
+    df.tempo = (df.tempo - df.tempo.iloc[0])/1000
     return df
 
 #altera os dados de tempo para milisegundos
@@ -615,16 +632,29 @@ def main():
                 dffixation_codigo, diretorio, participante, tarefa,
                 x, y, imagem, limites_codigo
             )
-            if len(dffixation_codigo) >= 2:
-                geraHeatmapBaseadoEmFixacaoDuracao(
-                    imagem, diretorio, dffixation_codigo.x,
-                    dffixation_codigo.y, dffixation_codigo.duracao,
-                    x, y, participante, tarefa, 200, limites_codigo
-                )
+            heatmap_path = os.path.join(
+                diretorio, "Heatmap Fix com Duracao (" + tarefa + ").png"
+            )
+            if os.path.isfile(heatmap_path):
+                os.remove(heatmap_path)
+
+            if fixacoesSuportamKde(dffixation_codigo):
+                try:
+                    geraHeatmapBaseadoEmFixacaoDuracao(
+                        imagem, diretorio, dffixation_codigo.x,
+                        dffixation_codigo.y, dffixation_codigo.duracao,
+                        x, y, participante, tarefa, 200, limites_codigo
+                    )
+                except np.linalg.LinAlgError:
+                    plt.close("all")
+                    print(
+                        "Heatmap ignorado: matriz de covariancia singular "
+                        "para as fixacoes na area do codigo"
+                    )
             else:
                 print(
-                    "Heatmap ignorado: menos de duas fixacoes "
-                    "na area do codigo"
+                    "Heatmap ignorado: sao necessarias pelo menos tres "
+                    "fixacoes nao colineares na area do codigo"
                 )
                 
 # ============================================================
