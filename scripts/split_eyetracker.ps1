@@ -10,7 +10,7 @@ param(
 
     [string]$Participant = '00',
 
-    [double]$MinimumGapSeconds = 2.0
+    [double]$MinimumGapSeconds = 5.0
 )
 
 $ErrorActionPreference = 'Stop'
@@ -97,12 +97,39 @@ for ($index = 1; $index -lt $records.Count; $index++) {
     }
 }
 
-if ($gaps.Count -lt 7) {
-    throw "Foram encontrados apenas $($gaps.Count) gaps; são necessários 7 para delimitar 6 tarefas."
+if ($participantLabel -eq 'P06') {
+    # Excecao temporaria: pausas fragmentadas por breves deteccoes dos olhos.
+    $manualBoundaries = @(
+        @('16:45:07:758', '16:45:11:186'),
+        @('16:47:25:334', '16:47:32:360'),
+        @('16:49:17:677', '16:49:24:735'),
+        @('16:50:47:511', '16:50:54:197'),
+        @('16:52:21:338', '16:52:27:562'),
+        @('16:54:26:009', '16:54:31:273'),
+        @('16:55:59:351', '16:56:05:105')
+    )
+    $indicesByTime = @{}
+    for ($index = 0; $index -lt $records.Count; $index++) {
+        $indicesByTime[$records[$index].Time.ToString($timeFormat)] = $index
+    }
+    $selectedGaps = [System.Collections.Generic.List[object]]::new()
+    foreach ($boundary in $manualBoundaries) {
+        if (-not $indicesByTime.ContainsKey($boundary[0]) -or
+            -not $indicesByTime.ContainsKey($boundary[1])) {
+            throw "Limite manual do P06 nao encontrado: $($boundary -join ' / ')"
+        }
+        $selectedGaps.Add([pscustomobject]@{
+            BeforeIndex = $indicesByTime[$boundary[0]]
+            AfterIndex = $indicesByTime[$boundary[1]]
+        })
+    }
 }
-
-# A primeira sequência de 7 gaps delimita as 6 tarefas da primeira gravação completa.
-$selectedGaps = $gaps | Select-Object -First 7
+else {
+    if ($gaps.Count -lt 7) {
+        throw "Foram encontrados apenas $($gaps.Count) gaps; sao necessarios 7 para delimitar 6 tarefas."
+    }
+    $selectedGaps = @($gaps | Select-Object -First 7)
+}
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $utf8WithoutBom = [Text.UTF8Encoding]::new($false)
 $cleaningSummary = [System.Collections.Generic.List[object]]::new()

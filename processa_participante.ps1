@@ -4,7 +4,7 @@ param(
 
     [string]$PythonExecutable = 'python',
 
-    [double]$MinimumGapSeconds = 2.0
+    [double]$MinimumGapSeconds = 5.0
 )
 
 $ErrorActionPreference = 'Stop'
