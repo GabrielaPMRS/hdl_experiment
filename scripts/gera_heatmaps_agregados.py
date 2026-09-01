@@ -118,10 +118,14 @@ def calcula_mapa(dados: pd.DataFrame, limites, largura: int, altura: int):
     valores = np.vstack([dados.x, dados.y])
     kernel = st.gaussian_kde(valores, weights=dados.duracao)
     densidade = np.reshape(kernel(posicoes).T, xx.shape)
+    # gaussian_kde normaliza os pesos para que a integral seja 1. Restaurar a
+    # duracao total transforma o resultado em densidade acumulada de tempo,
+    # permitindo comparar os dois grupos em uma mesma escala absoluta.
+    densidade *= float(dados.duracao.sum())
     return xx, yy, densidade
 
 
-def desenha(ax, imagem_path: Path, mapa, limites, titulo: str, n_fixacoes: int):
+def desenha(ax, imagem_path: Path, mapa, limites, titulo: str, escala_maxima: float):
     xmin, xmax, ymin, ymax = limites
     xx, yy, densidade = mapa
     imagem = mpimg.imread(imagem_path)
@@ -132,18 +136,18 @@ def desenha(ax, imagem_path: Path, mapa, limites, titulo: str, n_fixacoes: int):
         aspect="auto",
     )
 
-    alpha = min(max(n_fixacoes / 200, 0.0), 1.0)
     cores = plt.cm.Reds(np.linspace(0, 1, 10))
-    cores[:, 3] = np.linspace(0, alpha, 10)
+    cores[:, 3] = np.linspace(0, 1.0, 10)
     cores[0, 3] = 0.0
     mapa_cores = ListedColormap(cores)
+    niveis = np.linspace(0.0, escala_maxima, 10)
 
     ax.contourf(
         xx,
         yy,
         densidade,
         cmap=mapa_cores,
-        levels=10,
+        levels=niveis,
         zorder=1,
     )
     ax.set(xlim=(xmin, xmax), ylim=(ymin, ymax), title=titulo)
@@ -151,9 +155,9 @@ def desenha(ax, imagem_path: Path, mapa, limites, titulo: str, n_fixacoes: int):
     ax.set_ylabel("y-coordinate")
 
 
-def salva_individual(caminho, imagem, mapa, limites, titulo, n_fixacoes, dpi):
+def salva_individual(caminho, imagem, mapa, limites, titulo, escala_maxima, dpi):
     fig, ax = plt.subplots(figsize=(7, 8))
-    desenha(ax, imagem, mapa, limites, titulo, n_fixacoes)
+    desenha(ax, imagem, mapa, limites, titulo, escala_maxima)
     fig.tight_layout()
     fig.savefig(caminho, dpi=dpi, bbox_inches="tight")
     plt.close(fig)
@@ -200,29 +204,46 @@ def main() -> None:
             mapas[versao] = calcula_mapa(
                 dados, limites, args.grid_width, args.grid_height
             )
-            metadados[versao] = (len(dados), usados)
+            metadados[versao] = (
+                len(dados),
+                usados,
+                float(dados.duracao.sum()) / 1000.0,
+            )
+
+        # Os dois mapas da tarefa usam exatamente os mesmos limites de cor.
+        # Assim, o mesmo tom de vermelho representa a mesma densidade acumulada
+        # de tempo em Lambda e Omega.
+        escala_maxima = max(
+            float(mapas[versao][2].max()) for versao in VERSOES
+        )
 
         for versao in VERSOES:
-            n_fixacoes, usados = metadados[versao]
-            titulo = f"{versao.capitalize()} - {tarefa} ({len(usados)} participantes; {n_fixacoes} fixacoes)"
+            n_fixacoes, usados, duracao_total = metadados[versao]
+            titulo = (
+                f"{versao.capitalize()} - {tarefa} "
+                f"({len(usados)} participantes; {n_fixacoes} fixacoes; "
+                f"{duracao_total:.1f} s)"
+            )
             imagem = args.images_dir / versao / f"{tarefa}.png"
             if not imagem.is_file():
                 raise FileNotFoundError(f"Tela nao encontrada: {imagem}")
             salva_individual(
                 args.output_dir / f"heatmap_{versao}_{tarefa}.png",
-                imagem, mapas[versao], limites_por_versao[versao], titulo, n_fixacoes, args.dpi,
+                imagem, mapas[versao], limites_por_versao[versao], titulo,
+                escala_maxima, args.dpi,
             )
 
         fig, eixos = plt.subplots(1, 2, figsize=(14, 8))
         for ax, versao in zip(eixos, VERSOES):
-            n_fixacoes, usados = metadados[versao]
+            n_fixacoes, usados, duracao_total = metadados[versao]
             desenha(
                 ax,
                 args.images_dir / versao / f"{tarefa}.png",
                 mapas[versao],
                 limites_por_versao[versao],
-                f"{versao.capitalize()} ({len(usados)} participantes; {n_fixacoes} fixacoes)",
-                n_fixacoes,
+                f"{versao.capitalize()} ({len(usados)} participantes; "
+                f"{n_fixacoes} fixacoes; {duracao_total:.1f} s)",
+                escala_maxima,
             )
         fig.suptitle(f"Heatmaps agregados - {tarefa}")
         fig.tight_layout()
