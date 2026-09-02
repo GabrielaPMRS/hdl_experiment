@@ -139,7 +139,7 @@ endmodule`,
 
 endmodule`,
     question: "Considerando o código, qual seria o valor de 'selected'?",
-    options: ["selected = 20", "selected = 164", "selected = 224", "selected = 1", "Erro de compilação"],
+    options: ["selected = 20", "selected = 164", "selected = 224", "selected = 1", "selected = 0"],
     correctIndex: 2
   },
   {

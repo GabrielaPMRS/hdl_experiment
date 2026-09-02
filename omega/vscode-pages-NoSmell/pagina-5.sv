@@ -6,10 +6,10 @@ module example;
 
     initial begin
         lo = 20;
-        med = 164;
-        hi = 224;
+        med = 224;
+        hi = 164;
 
-        result = (lo < med < hi);
+        result = (lo < med) && (med < hi);
 
         if (result)
             selected = med;
@@ -19,4 +19,4 @@ module example;
 
 endmodule
 
-correct answer: result = 1, selected = 164
+correct answer: result = 0, selected = 164

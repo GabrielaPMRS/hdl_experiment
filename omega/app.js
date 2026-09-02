@@ -127,10 +127,10 @@ endmodule`,
 
     initial begin
         lo = 20;
-        med = 164;
-        hi = 224;
+        med = 224;
+        hi = 164;
 
-        result = (lo < med < hi);
+        result = (lo < med) && (med < hi);
 
         if (result)
             selected = med;
@@ -140,7 +140,7 @@ endmodule`,
 
 endmodule`,
     question: "Considerando o código, qual seria o valor de 'selected'?",
-    options: ["selected = 20", "selected = 164", "selected = 224", "selected = 1", "Erro de compilação"],
+    options: ["selected = 20", "selected = 164", "selected = 224", "selected = 1", "selected = 0"],
     correctIndex: 1
   },
   {
