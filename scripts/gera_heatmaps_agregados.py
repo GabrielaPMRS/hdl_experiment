@@ -81,7 +81,9 @@ def carrega_limites_codigo(aoi_config: Path, versao: str, tarefa: str):
     return 245.0, 820.0, ALTURA_TELA - base, ALTURA_TELA - topo
 
 
-def agrega_fixacoes(pastas: list[Path], tarefa: str, limites):
+def agrega_fixacoes(
+    pastas: list[Path], tarefa: str, limites, deslocamento_vertical: float
+):
     quadros = []
     usados = []
     xmin, xmax, ymin, ymax = limites
@@ -100,6 +102,11 @@ def agrega_fixacoes(pastas: list[Path], tarefa: str, limites):
             & (dados.duracao > 0),
             ["x", "y", "duracao"],
         ].dropna()
+        # Preserva o banco definido pelo recorte original e corrige somente a
+        # posicao usada no mapa. Como Y cresce para cima, subtrair um valor
+        # positivo desloca as fixacoes visualmente para baixo.
+        dados = dados.copy()
+        dados["y"] = dados["y"] - deslocamento_vertical
         if not dados.empty:
             quadros.append(dados)
             usados.append(pasta.name)
@@ -174,6 +181,15 @@ def main() -> None:
     parser.add_argument("--grid-height", type=int, default=100)
     parser.add_argument("--dpi", type=int, default=200)
     parser.add_argument(
+        "--deslocamento-vertical",
+        type=float,
+        default=25.0,
+        help=(
+            "Deslocamento visual das fixacoes em pixels para baixo, aplicado "
+            "depois do filtro da area do codigo (padrao: 25)"
+        ),
+    )
+    parser.add_argument(
         "--permitir-grupos-desiguais",
         action="store_true",
         help="Gera os mapas mesmo se os grupos tiverem tamanhos diferentes",
@@ -200,7 +216,9 @@ def main() -> None:
         for versao in VERSOES:
             limites = carrega_limites_codigo(args.aoi_config, versao, tarefa)
             limites_por_versao[versao] = limites
-            dados, usados = agrega_fixacoes(grupos[versao], tarefa, limites)
+            dados, usados = agrega_fixacoes(
+                grupos[versao], tarefa, limites, args.deslocamento_vertical
+            )
             mapas[versao] = calcula_mapa(
                 dados, limites, args.grid_width, args.grid_height
             )
