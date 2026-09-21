@@ -6,8 +6,8 @@ module example;
 
     initial begin
         lo = 20;
-        med = 224;
-        hi = 164;
+        med = 164;
+        hi = 224;
 
         result = (lo < med) && (med < hi);
 
@@ -19,4 +19,4 @@ module example;
 
 endmodule
 
-correct answer: result = 0, selected = 164
+// Gabarito: result = 1; selected = 164

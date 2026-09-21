@@ -4,22 +4,15 @@ module example (
 );
 
     always_comb begin
-        case (instruction) inside
+        if (instruction ==? 4'b00??)
+            opcode = 3'b001;
 
-            4'b0???:
-                opcode = 3'b001;
+        else if (instruction ==? 4'b0???)
+            opcode = 3'b001;
 
-            4'b1000:
-                opcode = 3'b010;
-
-            default:
-                opcode = 3'b111;
-
-        endcase
+        else
+            opcode = 3'b111;
     end
-
 endmodule
 
-correct answer:
-instruction = 4'bxxxx
-opcode = 3'b111
+// Gabarito: instruction = 4'b0x01 -> opcode = 3'b001

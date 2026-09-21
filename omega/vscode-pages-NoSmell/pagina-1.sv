@@ -1,9 +1,8 @@
 module mux (
-    input  logic [1:0] selector,
-    input  logic       enable,
+    input logic [1:0] selector,
+    input logic enable,
     output logic [7:0] out
 );
-
     logic [7:0] decoded;
 
     always_comb begin
@@ -20,8 +19,6 @@ module mux (
         else
             out = 8'd0;
     end
-
 endmodule
 
-selector = 10; enable   = 1;
-correct answer: out=30
+// Gabarito: selector = 2'b10; enable = 1 -> out = 30

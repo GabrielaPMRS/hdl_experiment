@@ -1,5 +1,12 @@
 # Telas e AOIs por versão
 
+Revisão de 21/09/2026: os códigos e gabaritos da aplicação foram atualizados.
+Os prints existentes e as coordenadas de `aoi_por_versao.json` ainda são da
+revisão anterior. Capture as novas telas e confira as coordenadas antes de
+gerar gráficos das novas coletas, especialmente `omega/T06`. Preserve os
+recursos anteriores se precisar analisar coletas antigas. Veja os gabaritos
+e limites de equivalência em [REVISAO_CODIGOS.md](REVISAO_CODIGOS.md).
+
 As tarefas continuam identificadas como `T01` a `T06`. A versão do
 experimento diferencia os dois estímulos do mesmo caso:
 

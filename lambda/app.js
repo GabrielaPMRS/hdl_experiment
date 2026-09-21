@@ -15,8 +15,8 @@ const codeQuestions = [
         case (selector)
             0: decoded = 8'd10;
             01: decoded = 8'd20;
-            10: decoded = 8'd30;
-            2: decoded = 8'd40;
+            2: decoded = 8'd30;
+            10: decoded = 8'd40;
             default: decoded = 8'd100;
         endcase
 
@@ -26,9 +26,9 @@ const codeQuestions = [
             out = 8'd0;
     end
 endmodule`,
-    question: "Considerando o código, qual é o valor de 'out' quando 'selector' = 10 e 'enable' = 1?",
+    question: "Considerando o código, qual é o valor de 'out' quando 'selector' = 2'b10 e 'enable' = 1?",
     options: ["out = 0", "out = 10", "out = 30", "out = 40", "out = 100"],
-    correctIndex: 3
+    correctIndex: 2
   },
   {
     id: "code-2",
@@ -41,7 +41,7 @@ endmodule`,
     logic [1:0][31:0] A;
 
     initial begin
-        A = '{1'b1, 1'b1};
+        A = {1'b1, 1'b1};
 
         out0 = A[0];
         out1 = A[1];
@@ -56,7 +56,7 @@ endmodule`,
       "out0 = 00000000000000000000000000000010\nout1 = 00000000000000000000000000000010",
       "out0 = 00000000000000000000000000000000\nout1 = 00000000000000000000000000000001"
     ],
-    correctIndex: 2
+    correctIndex: 0
   },
   {
     id: "code-3",
@@ -100,7 +100,7 @@ endmodule`,
 );
 
     int result;
-    byte in = -5;
+    byte in = 5;
 
     always_comb begin
         result = in + 1'b1;
@@ -112,8 +112,8 @@ endmodule`,
     end
 endmodule`,
     question: "Considerando o código, qual seria o valor de 'out' quando 'enable' = 1?",
-    options: ["out = -4", "out = 251", "out = 4", "out = 252", "Erro de compilação"],
-    correctIndex: 3
+    options: ["out = 5", "out = 6", "out = 4", "out = 1", "Erro de compilação"],
+    correctIndex: 1
   },
   {
     id: "code-5",
@@ -126,8 +126,8 @@ endmodule`,
 
     initial begin
         lo = 20;
-        med = 224;
-        hi = 164;
+        med = 164;
+        hi = 224;
 
         result = (lo < med < hi);
 
@@ -140,7 +140,7 @@ endmodule`,
 endmodule`,
     question: "Considerando o código, qual seria o valor de 'selected'?",
     options: ["selected = 20", "selected = 164", "selected = 224", "selected = 1", "selected = 0"],
-    correctIndex: 2
+    correctIndex: 1
   },
   {
     id: "code-6",
@@ -153,10 +153,10 @@ endmodule`,
     always_comb begin
         casex (instruction)
 
-            4'b0???:
+            4'b00??:
                 opcode = 3'b001;
 
-            4'b1000:
+            4'b0???:
                 opcode = 3'b010;
 
             default:
@@ -165,7 +165,7 @@ endmodule`,
         endcase
     end
 endmodule`,
-    question: "Considerando o código, qual seria o valor de 'opcode' considerando instruction = 4'bxxxx?",
+    question: "Considerando o código, qual seria o valor de 'opcode' considerando instruction = 4'b0x01?",
     options: ["001", "010", "111", "Erro de compilação", "opcode não muda"],
     correctIndex: 0
   }

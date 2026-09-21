@@ -1,6 +1,6 @@
 module example;
 
-    function automatic int maxx(int a, int b);
+    function static int maxx(int a, int b);
         int max = a;
 
         if (b > max)
@@ -19,7 +19,4 @@ module example;
 
 endmodule
 
-correct answer:
-maxx(3, 7) = r1 = 7
-maxx(1, 2) = r2 = 2
-maxx(0, 0) = r3 = 0
+// Gabarito: r1 = 7; r2 = 7; r3 = 7

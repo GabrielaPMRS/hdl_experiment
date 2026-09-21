@@ -26,7 +26,7 @@ const codeQuestions = [
             out = 8'd0;
     end
 endmodule`,
-    question: "Considerando o código, qual é o valor de 'out' quando 'selector' = 10 e 'enable' = 1?",
+    question: "Considerando o código, qual é o valor de 'out' quando 'selector' = 2'b10 e 'enable' = 1?",
     options: ["out = 0", "out = 10", "out = 30", "out = 40", "out = 100"],
     correctIndex: 2
   },
@@ -41,8 +41,8 @@ endmodule`,
     logic [1:0][31:0] A;
 
     initial begin
-        A[0] = 1'b1;
-        A[1] = 1'b1;
+        A[0] = 2'b11;
+        A[1] = 2'b00;
 
         out0 = A[0];
         out1 = A[1];
@@ -57,14 +57,14 @@ endmodule`,
       "out0 = 00000000000000000000000000000010\nout1 = 00000000000000000000000000000010",
       "out0 = 00000000000000000000000000000000\nout1 = 00000000000000000000000000000001"
     ],
-    correctIndex: 2
+    correctIndex: 0
   },
   {
     id: "code-3",
     title: "Código 3",
     code: `module example;
 
-    function automatic int maxx(int a, int b);
+    function static int maxx(int a, int b);
         int max = a;
 
         if (b > max)
@@ -90,7 +90,7 @@ endmodule`,
       "r1 = 2\nr2 = 2\nr3 = 2",
       "r1 = 0\nr2 = 0\nr3 = 0"
     ],
-    correctIndex: 0
+    correctIndex: 2
   },
   {
     id: "code-4",
@@ -101,7 +101,7 @@ endmodule`,
 );
 
     int result;
-    byte in = -5;
+    byte in = 5;
 
     always_comb begin
         result = in + 1;
@@ -113,8 +113,8 @@ endmodule`,
     end
 endmodule`,
     question: "Considerando o código, qual seria o valor de 'out' quando 'enable' = 1?",
-    options: ["out = -4", "out = 251", "out = 4", "out = 252", "Erro de compilação"],
-    correctIndex: 0
+    options: ["out = 5", "out = 6", "out = 4", "out = 1", "Erro de compilação"],
+    correctIndex: 1
   },
   {
     id: "code-5",
@@ -127,8 +127,8 @@ endmodule`,
 
     initial begin
         lo = 20;
-        med = 224;
-        hi = 164;
+        med = 164;
+        hi = 224;
 
         result = (lo < med) && (med < hi);
 
@@ -152,23 +152,19 @@ endmodule`,
 );
 
     always_comb begin
-        case (instruction) inside
+        if (instruction ==? 4'b00??)
+            opcode = 3'b001;
 
-            4'b0???:
-                opcode = 3'b001;
+        else if (instruction ==? 4'b0???)
+            opcode = 3'b001;
 
-            4'b1000:
-                opcode = 3'b010;
-
-            default:
-                opcode = 3'b111;
-
-        endcase
+        else
+            opcode = 3'b111;
     end
 endmodule`,
-    question: "Considerando o código, qual seria o valor de 'opcode' considerando instruction = 4'bxxxx?",
+    question: "Considerando o código, qual seria o valor de 'opcode' considerando instruction = 4'b0x01?",
     options: ["001", "010", "111", "Erro de compilação", "opcode não muda"],
-    correctIndex: 2
+    correctIndex: 0
   }
 ];
 

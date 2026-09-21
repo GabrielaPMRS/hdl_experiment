@@ -2,8 +2,9 @@ module example (
     input  logic enable,
     output int   out
 );
+
     int result;
-    byte in = -5;
+    byte in = 5;
 
     always_comb begin
         result = in + 1;
@@ -15,4 +16,4 @@ module example (
     end
 endmodule
 
-correct answer: enable=1 -> out=-4
+// Gabarito: enable = 1 -> out = 6

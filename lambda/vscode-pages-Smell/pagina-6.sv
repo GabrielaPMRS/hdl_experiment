@@ -6,10 +6,10 @@ module example (
     always_comb begin
         casex (instruction)
 
-            4'b0???:
+            4'b00??:
                 opcode = 3'b001;
 
-            4'b1000:
+            4'b0???:
                 opcode = 3'b010;
 
             default:
@@ -17,9 +17,6 @@ module example (
 
         endcase
     end
-
 endmodule
 
-correct answer:
-instruction = 4'bxxxx
-opcode = 3'b001
+// Gabarito: instruction = 4'b0x01 -> opcode = 3'b001
