@@ -96,7 +96,7 @@ endmodule`,
         med = 164;
         hi = 224;
 
-        result = (lo < med < hi);
+        result = lo < med < hi;
 
         if (result)
             selected = med;
