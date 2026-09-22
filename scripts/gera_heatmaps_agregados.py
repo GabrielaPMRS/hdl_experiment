@@ -25,7 +25,7 @@ import scipy.stats as st
 
 
 VERSOES = ("lambda", "omega")
-TAREFAS = tuple(f"T{numero:02d}" for numero in range(1, 7))
+TAREFAS = tuple(f"T{numero:02d}" for numero in (1, 2, 4, 5))
 LARGURA_TELA = 1920
 ALTURA_TELA = 1080
 

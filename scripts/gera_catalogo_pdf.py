@@ -16,12 +16,12 @@ TITLE = "Catálogo de Átomos de Confusão em SystemVerilog"
 
 def read_case(path: Path) -> tuple[list[str], list[str]]:
     lines = path.read_text(encoding="utf-8").splitlines()
-    marker = next(i for i, line in enumerate(lines) if line.strip().startswith("correct answer:"))
+    marker = next(i for i, line in enumerate(lines) if line.strip().startswith("// Gabarito:"))
     code = lines[:marker]
     while code and not code[-1].strip():
         code.pop()
-    inline_answer = lines[marker].split("correct answer:", 1)[1].strip()
-    answer = ([inline_answer] if inline_answer else []) + [
+    inline_answer = lines[marker].split("// Gabarito:", 1)[1].strip()
+    answer = ([part.strip() for part in inline_answer.split(";")] if inline_answer else []) + [
         line.strip() for line in lines[marker + 1:] if line.strip()
     ]
     return code, answer
@@ -85,7 +85,7 @@ def build() -> None:
     pdf.setTitle(TITLE)
     pdf.setAuthor("Experimento HDL")
 
-    for number in range(1, 7):
+    for page_number, number in enumerate((1, 2, 4, 5), start=1):
         left, left_answer = read_case(ROOT / "lambda" / "vscode-pages-Smell" / f"pagina-{number}.sv")
         right, right_answer = read_case(ROOT / "omega" / "vscode-pages-NoSmell" / f"pagina-{number}.sv")
         left_changed, right_changed = changed_lines(left, right)
@@ -128,7 +128,7 @@ def build() -> None:
 
         pdf.setFillColor(colors.HexColor("#7A8994"))
         pdf.setFont("Helvetica", 7.5)
-        pdf.drawRightString(page_width - 42, 22, f"Caso {number} de 6")
+        pdf.drawRightString(page_width - 42, 22, f"Página {page_number} de 4 - Caso {number}")
         pdf.showPage()
 
     pdf.save()

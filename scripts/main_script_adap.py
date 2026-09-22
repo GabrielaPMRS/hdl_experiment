@@ -75,7 +75,7 @@ def carregaConfiguracaoDasAOIs(caminho):
     for versao in ("lambda", "omega"):
         if versao not in configuracao:
             raise ValueError("Versao ausente no arquivo de AOIs: " + versao)
-        for numero in range(1, 7):
+        for numero in (1, 2, 4, 5):
             tarefa = "T{0:02d}".format(numero)
             if tarefa not in configuracao[versao]:
                 raise ValueError("AOI ausente: " + versao + "/" + tarefa)
@@ -547,8 +547,8 @@ def main():
             )
 
     ordem = ordem.sort_values("PosicaoExecucao")
-    if len(ordem) != 6 or ordem.TarefaReal.nunique() != 6:
-        raise ValueError("resumo_tarefas.csv deve mapear seis tarefas diferentes")
+    if len(ordem) != 4 or set(ordem.TarefaReal) != {"T01", "T02", "T04", "T05"}:
+        raise ValueError("resumo_tarefas.csv deve mapear as quatro tarefas T01, T02, T04 e T05")
     versoes = set(ordem.VersaoExperimento.astype(str).str.lower())
     if len(versoes) != 1 or not versoes.issubset({"lambda", "omega"}):
         raise ValueError("A versao do experimento deve ser somente lambda ou omega")

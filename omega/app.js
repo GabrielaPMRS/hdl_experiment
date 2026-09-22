@@ -60,39 +60,6 @@ endmodule`,
     correctIndex: 0
   },
   {
-    id: "code-3",
-    title: "Código 3",
-    code: `module example;
-
-    function static int maxx(int a, int b);
-        int max = a;
-
-        if (b > max)
-            max = b;
-
-        return max;
-    endfunction
-
-    initial begin
-        int r1, r2, r3;
-
-        r1 = maxx(3, 7);
-        r2 = maxx(1, 2);
-        r3 = maxx(0, 0);
-    end
-
-endmodule`,
-    question: "Considerando o código, quais seriam os valores correspondentes de r1, r2 e r3, respectivamente?",
-    options: [
-      "r1 = 7\nr2 = 2\nr3 = 0",
-      "r1 = 3\nr2 = 1\nr3 = 0",
-      "r1 = 7\nr2 = 7\nr3 = 7",
-      "r1 = 2\nr2 = 2\nr3 = 2",
-      "r1 = 0\nr2 = 0\nr3 = 0"
-    ],
-    correctIndex: 2
-  },
-  {
     id: "code-4",
     title: "Código 4",
     code: `module example (
@@ -142,33 +109,10 @@ endmodule`,
     question: "Considerando o código, qual seria o valor de 'selected'?",
     options: ["selected = 20", "selected = 164", "selected = 224", "selected = 1", "selected = 0"],
     correctIndex: 1
-  },
-  {
-    id: "code-6",
-    title: "Código 6",
-    code: `module example (
-    input  logic [3:0] instruction,
-    output logic [2:0] opcode
-);
-
-    always_comb begin
-        if (instruction ==? 4'b00??)
-            opcode = 3'b001;
-
-        else if (instruction ==? 4'b0???)
-            opcode = 3'b001;
-
-        else
-            opcode = 3'b111;
-    end
-endmodule`,
-    question: "Considerando o código, qual seria o valor de 'opcode' considerando instruction = 4'b0x01?",
-    options: ["001", "010", "111", "Erro de compilação", "opcode não muda"],
-    correctIndex: 0
   }
 ];
 
-const storageKey = `hdl-systemverilog-survey-results-${experimentVersion}`;
+const storageKey = `hdl-systemverilog-survey-results-quatro-casos-${experimentVersion}`;
 const session = {
   participantId: null,
   demographics: {},

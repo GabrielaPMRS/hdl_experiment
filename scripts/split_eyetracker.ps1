@@ -33,8 +33,8 @@ if ($experiment -is [array]) {
 }
 
 $questions = @($experiment.perguntas | Sort-Object { [int]$_.ordemExecucao })
-if ($questions.Count -ne 6) {
-    throw "O JSON possui $($questions.Count) tarefas concluidas; eram esperadas 6."
+if ($questions.Count -ne 4) {
+    throw "O JSON possui $($questions.Count) tarefas concluidas; eram esperadas 4."
 }
 
 $experimentVersion = ([string]$experiment.versaoExperimento).ToLowerInvariant()
@@ -43,7 +43,7 @@ if ($experimentVersion -notin @('lambda', 'omega')) {
 }
 
 $executionOrder = [System.Collections.Generic.List[object]]::new()
-for ($position = 1; $position -le 6; $position++) {
+for ($position = 1; $position -le $questions.Count; $position++) {
     $question = $questions[$position - 1]
     if ([int]$question.ordemExecucao -ne $position) {
         throw "Ordem de execucao invalida no JSON: esperava $position e encontrou $($question.ordemExecucao)."
@@ -52,6 +52,9 @@ for ($position = 1; $position -le 6; $position++) {
         throw "codigoId invalido no JSON: $($question.codigoId)"
     }
     $realTask = 'T{0:D2}' -f [int]$Matches[1]
+    if ($realTask -notin @('T01', 'T02', 'T04', 'T05')) {
+        throw "Tarefa fora do experimento atual: $realTask"
+    }
     $executionOrder.Add([pscustomobject]@{
         Participante = $participantLabel
         VersaoExperimento = $experimentVersion
@@ -65,7 +68,7 @@ for ($position = 1; $position -le 6; $position++) {
     })
 }
 
-if (($executionOrder.TarefaReal | Sort-Object -Unique).Count -ne 6) {
+if (($executionOrder.TarefaReal | Sort-Object -Unique).Count -ne 4) {
     throw 'O JSON contem tarefas repetidas ou ausentes.'
 }
 
@@ -97,44 +100,16 @@ for ($index = 1; $index -lt $records.Count; $index++) {
     }
 }
 
-if ($participantLabel -eq 'P06') {
-    # Excecao temporaria: pausas fragmentadas por breves deteccoes dos olhos.
-    $manualBoundaries = @(
-        @('16:45:07:758', '16:45:11:186'),
-        @('16:47:25:334', '16:47:32:360'),
-        @('16:49:17:677', '16:49:24:735'),
-        @('16:50:47:511', '16:50:54:197'),
-        @('16:52:21:338', '16:52:27:562'),
-        @('16:54:26:009', '16:54:31:273'),
-        @('16:55:59:351', '16:56:05:105')
-    )
-    $indicesByTime = @{}
-    for ($index = 0; $index -lt $records.Count; $index++) {
-        $indicesByTime[$records[$index].Time.ToString($timeFormat)] = $index
-    }
-    $selectedGaps = [System.Collections.Generic.List[object]]::new()
-    foreach ($boundary in $manualBoundaries) {
-        if (-not $indicesByTime.ContainsKey($boundary[0]) -or
-            -not $indicesByTime.ContainsKey($boundary[1])) {
-            throw "Limite manual do P06 nao encontrado: $($boundary -join ' / ')"
-        }
-        $selectedGaps.Add([pscustomobject]@{
-            BeforeIndex = $indicesByTime[$boundary[0]]
-            AfterIndex = $indicesByTime[$boundary[1]]
-        })
-    }
+$requiredGaps = $questions.Count + 1
+if ($gaps.Count -lt $requiredGaps) {
+    throw "Foram encontrados apenas $($gaps.Count) gaps; sao necessarios $requiredGaps para delimitar $($questions.Count) tarefas."
 }
-else {
-    if ($gaps.Count -lt 7) {
-        throw "Foram encontrados apenas $($gaps.Count) gaps; sao necessarios 7 para delimitar 6 tarefas."
-    }
-    $selectedGaps = @($gaps | Select-Object -First 7)
-}
+$selectedGaps = @($gaps | Select-Object -First $requiredGaps)
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $utf8WithoutBom = [Text.UTF8Encoding]::new($false)
 $cleaningSummary = [System.Collections.Generic.List[object]]::new()
 
-for ($task = 1; $task -le 6; $task++) {
+for ($task = 1; $task -le $questions.Count; $task++) {
     $startIndex = $selectedGaps[$task - 1].AfterIndex
     $endIndex = $selectedGaps[$task].BeforeIndex
     $startRecord = $records[$startIndex]

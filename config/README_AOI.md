@@ -3,11 +3,11 @@
 Revisão de 21/09/2026: os códigos e gabaritos da aplicação foram atualizados.
 Os prints existentes e as coordenadas de `aoi_por_versao.json` ainda são da
 revisão anterior. Capture as novas telas e confira as coordenadas antes de
-gerar gráficos das novas coletas, especialmente `omega/T06`. Preserve os
+gerar gráficos das novas coletas, para as quatro tarefas ativas. Preserve os
 recursos anteriores se precisar analisar coletas antigas. Veja os gabaritos
 e limites de equivalência em [REVISAO_CODIGOS.md](REVISAO_CODIGOS.md).
 
-As tarefas continuam identificadas como `T01` a `T06`. A versão do
+As tarefas ativas são `T01`, `T02`, `T04` e `T05`, mantendo os IDs originais. A versão do
 experimento diferencia os dois estímulos do mesmo caso:
 
 - `lambda/T01`: caso 1 com átomo;
@@ -16,8 +16,8 @@ experimento diferencia os dois estímulos do mesmo caso:
 Os novos prints devem ser salvos em:
 
 ```text
-Documents/demo/telas/lambda/T01.png ... T06.png
-Documents/demo/telas/omega/T01.png  ... T06.png
+Documents/demo/telas/lambda/T01.png, T02.png, T04.png, T05.png
+Documents/demo/telas/omega/T01.png, T02.png, T04.png, T05.png
 ```
 
 No arquivo `aoi_por_versao.json`, preencha cada entrada da seguinte forma:

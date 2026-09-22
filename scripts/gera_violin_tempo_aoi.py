@@ -20,7 +20,7 @@ import seaborn as sns
 
 
 VERSOES = ("lambda", "omega")
-TAREFAS = tuple(f"T{numero:02d}" for numero in range(1, 7))
+TAREFAS = tuple(f"T{numero:02d}" for numero in (1, 2, 4, 5))
 REGIOES = ("codigo", "aoi1")
 ALTURA_TELA = 1080.0
 X_MIN_CODIGO = 245.0
@@ -164,7 +164,7 @@ def salva_resumos(dados: pd.DataFrame, output_dir: Path, regiao: str):
 def gera_grafico(dados: pd.DataFrame, caminho: Path, dpi: int, regiao: str):
     sns.set_theme(style="whitegrid")
     paleta = {"lambda": "#ef9a8f", "omega": "#8ebad3"}
-    fig, eixos = plt.subplots(2, 3, figsize=(15, 10), sharey=False)
+    fig, eixos = plt.subplots(2, 2, figsize=(12, 10), sharey=False)
 
     for eixo, tarefa in zip(eixos.flat, TAREFAS):
         dados_tarefa = dados.loc[dados.Tarefa == tarefa]
