@@ -51,13 +51,13 @@ endmodule`,
 endmodule`,
     question: "Considerando o código, quais seriam os valores de 'out0' e 'out1'?",
     options: [
-      "out0 = 00000000000000000000000000000011\nout1 = 00000000000000000000000000000000",
-      "out0 = 00000000000000000000000000000000\nout1 = 00000000000000000000000000000011",
       "out0 = 00000000000000000000000000000001\nout1 = 00000000000000000000000000000001",
+      "out0 = 00000000000000000000000000000000\nout1 = 00000000000000000000000000000011",
       "out0 = 00000000000000000000000000000010\nout1 = 00000000000000000000000000000010",
+      "out0 = 00000000000000000000000000000011\nout1 = 00000000000000000000000000000000",
       "out0 = 00000000000000000000000000000000\nout1 = 00000000000000000000000000000001"
     ],
-    correctIndex: 0
+    correctIndex: 3
   },
   {
     id: "code-4",
@@ -384,6 +384,8 @@ function buildCsv() {
       "experienciaAnos",
       "proficiencia",
       "areaExperiencia",
+      "experienciaHardware",
+      "experienciaSoftware",
       "ordemExecucao",
       "codigoId",
       "codigoTitulo",
@@ -399,6 +401,8 @@ function buildCsv() {
       session.demographics.experienciaAnos,
       session.demographics.proficiencia,
       session.demographics.areaExperiencia,
+      session.demographics.experienciaHardware,
+      session.demographics.experienciaSoftware,
       response.ordemExecucao,
       response.codigoId,
       response.codigoTitulo,

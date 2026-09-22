@@ -12,7 +12,7 @@ O armazenamento local da aplicação usa uma chave própria para esta revisão.
 | Caso | Condição da pergunta | Resposta | Alternativa (1–5) |
 | --- | --- | --- | --- |
 | 1 | `selector = 2'b10`, `enable = 1` | `out = 30` | 3 |
-| 2 | Inicialização apresentada | `out0 = 32'b11`, `out1 = 32'b0` | 1 |
+| 2 | Inicialização apresentada | `out0 = 32'b11`, `out1 = 32'b0` | 4 |
 | 4 | `enable = 1` | `out = 6` | 2 |
 | 5 | `lo = 20`, `med = 164`, `hi = 224` | `selected = 164` | 2 |
 
