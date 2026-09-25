@@ -17,6 +17,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from fontes_agregados import seleciona_fontes, salva_fontes
 
 
 VERSOES = ("lambda", "omega")
@@ -59,32 +60,16 @@ def limites_regiao(configuracao: dict, versao: str, tarefa: str, regiao: str):
     return X_MIN_CODIGO, X_MAX_CODIGO, y_min, y_max
 
 
-def descobre_participantes(data_dir: Path):
-    participantes = []
-    for pasta in sorted(data_dir.glob("P*")):
-        if not pasta.is_dir():
-            continue
-        resumo_path = pasta / "resumo_tarefas.csv"
-        if not resumo_path.is_file():
-            print(f"Ignorado {pasta.name}: resumo_tarefas.csv ausente")
-            continue
-        resumo = pd.read_csv(resumo_path)
-        if "VersaoExperimento" not in resumo.columns:
-            raise ValueError(f"VersaoExperimento ausente em {resumo_path}")
-        versoes = set(resumo.VersaoExperimento.astype(str).str.lower())
-        if len(versoes) != 1 or not versoes.issubset(VERSOES):
-            raise ValueError(
-                f"Versao inconsistente para {pasta.name}: {sorted(versoes)}"
-            )
-        participantes.append((pasta, next(iter(versoes))))
-    return participantes
+def descobre_participantes(data_dir: Path, recovered_dir=None):
+    return seleciona_fontes(data_dir, recovered_dir)
 
 
 def calcula_tempos(
-    data_dir: Path, configuracao: dict, regiao: str
+    data_dir: Path, configuracao: dict, regiao: str, participantes=None
 ) -> pd.DataFrame:
     linhas = []
-    participantes = descobre_participantes(data_dir)
+    if participantes is None:
+        participantes = descobre_participantes(data_dir)
     if not participantes:
         raise ValueError(f"Nenhum participante processado encontrado em {data_dir}")
 
@@ -227,11 +212,14 @@ def main():
         help="Regiao usada no calculo: codigo (padrao) ou aoi1",
     )
     parser.add_argument("--dpi", type=int, default=200)
+    parser.add_argument("--recovered-data-dir", type=Path, help="Padrao: pasta recuperados/data ao lado de data")
     args = parser.parse_args()
 
     configuracao = carrega_configuracao(args.aoi_config)
-    dados = calcula_tempos(args.data_dir, configuracao, args.regiao)
+    fontes = descobre_participantes(args.data_dir, args.recovered_data_dir)
+    dados = calcula_tempos(args.data_dir, configuracao, args.regiao, participantes=fontes)
     args.output_dir.mkdir(parents=True, exist_ok=True)
+    salva_fontes(fontes, args.output_dir)
     salva_resumos(dados, args.output_dir, args.regiao)
     gera_grafico(
         dados,

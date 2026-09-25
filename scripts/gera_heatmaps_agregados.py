@@ -22,6 +22,7 @@ from matplotlib.colors import ListedColormap
 import numpy as np
 import pandas as pd
 import scipy.stats as st
+from fontes_agregados import seleciona_fontes, salva_fontes
 
 
 VERSOES = ("lambda", "omega")
@@ -41,30 +42,10 @@ def versao_esperada(participante: str) -> str:
     return "lambda" if numero_participante(participante) % 2 == 0 else "omega"
 
 
-def descobre_participantes(data_dir: Path) -> dict[str, list[Path]]:
+def descobre_participantes(data_dir: Path, recovered_dir=None) -> dict[str, list[Path]]:
     grupos = {versao: [] for versao in VERSOES}
-    for pasta in sorted(data_dir.glob("P*")):
-        if not pasta.is_dir():
-            continue
-        try:
-            esperada = versao_esperada(pasta.name)
-        except ValueError:
-            continue
-
-        resumo_path = pasta / "resumo_tarefas.csv"
-        if not resumo_path.is_file():
-            print(f"Ignorado {pasta.name}: resumo_tarefas.csv ausente")
-            continue
-        resumo = pd.read_csv(resumo_path)
-        if "VersaoExperimento" not in resumo.columns:
-            raise ValueError(f"VersaoExperimento ausente em {resumo_path}")
-        versoes = set(resumo["VersaoExperimento"].astype(str).str.lower())
-        if versoes != {esperada}:
-            raise ValueError(
-                f"Condicao inconsistente para {pasta.name}: "
-                f"esperado {esperada}, encontrado {sorted(versoes)}"
-            )
-        grupos[esperada].append(pasta)
+    for pasta, versao in seleciona_fontes(data_dir, recovered_dir):
+        grupos[versao].append(pasta)
     return grupos
 
 
@@ -90,8 +71,7 @@ def agrega_fixacoes(
     for pasta in pastas:
         caminho = pasta / f"Fixations {pasta.name} {tarefa}.csv"
         if not caminho.is_file():
-            print(f"Aviso: fixacoes ausentes: {caminho}")
-            continue
+            raise FileNotFoundError(f"Fixacoes ausentes: {caminho}")
         dados = pd.read_csv(caminho)
         colunas = {"x", "y", "duracao"}
         if not colunas.issubset(dados.columns):
@@ -194,9 +174,10 @@ def main() -> None:
         action="store_true",
         help="Gera os mapas mesmo se os grupos tiverem tamanhos diferentes",
     )
+    parser.add_argument("--recovered-data-dir", type=Path, help="Padrao: pasta recuperados/data ao lado de data")
     args = parser.parse_args()
 
-    grupos = descobre_participantes(args.data_dir)
+    grupos = descobre_participantes(args.data_dir, args.recovered_data_dir)
     quantidades = {versao: len(pastas) for versao, pastas in grupos.items()}
     if 0 in quantidades.values():
         raise ValueError(f"Os dois grupos precisam ter participantes: {quantidades}")
@@ -207,6 +188,7 @@ def main() -> None:
         )
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
+    salva_fontes(sorted([(pasta, versao) for versao, pastas in grupos.items() for pasta in pastas]), args.output_dir)
     print(f"Participantes: lambda={quantidades['lambda']}, omega={quantidades['omega']}")
 
     for tarefa in TAREFAS:
