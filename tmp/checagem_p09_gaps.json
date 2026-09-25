@@ -1,0 +1,70 @@
+[
+  {
+    "tarefa": "T05",
+    "amostras": 9978,
+    "amostras_fora_codigo": 1118,
+    "gaps_acima_1s": [
+      {
+        "antes": " 17:05:27:394",
+        "depois": " 17:05:36:190",
+        "gap_s": 8.796,
+        "ponto_antes": [
+          640.6920515109,
+          494.358044074651
+        ],
+        "ponto_depois": [
+          371.424307772269,
+          453.819732653558
+        ],
+        "fixacoes_sobrepostas": []
+      },
+      {
+        "antes": " 17:05:46:465",
+        "depois": " 17:05:53:961",
+        "gap_s": 7.496,
+        "ponto_antes": [
+          386.6336498564,
+          543.427600704254
+        ],
+        "ponto_depois": [
+          310.762528568037,
+          -58.9079772709229
+        ],
+        "fixacoes_sobrepostas": []
+      }
+    ]
+  },
+  {
+    "tarefa": "T02",
+    "amostras": 5992,
+    "amostras_fora_codigo": 1758,
+    "gaps_acima_1s": [
+      {
+        "antes": " 17:07:32:652",
+        "depois": " 17:07:41:907",
+        "gap_s": 9.255,
+        "ponto_antes": [
+          450.600197385448,
+          432.95688932602
+        ],
+        "ponto_depois": [
+          1232.33885187084,
+          192.488682262865
+        ],
+        "fixacoes_sobrepostas": []
+      }
+    ]
+  },
+  {
+    "tarefa": "T04",
+    "amostras": 6160,
+    "amostras_fora_codigo": 1593,
+    "gaps_acima_1s": []
+  },
+  {
+    "tarefa": "T01",
+    "amostras": 5325,
+    "amostras_fora_codigo": 1580,
+    "gaps_acima_1s": []
+  }
+]

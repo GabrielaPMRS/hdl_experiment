@@ -12,7 +12,7 @@ $participantNumber = $Participant -replace '^P', ''
 if ($participantNumber -notmatch '^\d+$') {
     throw 'Participante invalido. Use 00, 01, 02... ou P00, P01, P02...'
 }
-$participantLabel = "P$participantNumber"
+$participantLabel = 'P{0:D2}' -f [int]$participantNumber
 $documentsDirectory = [Environment]::GetFolderPath('MyDocuments')
 $demoDirectory = Join-Path $documentsDirectory 'demo'
 $collectionDirectory = Join-Path (Join-Path $demoDirectory 'coletas') $participantLabel
@@ -25,6 +25,16 @@ $participantDirectory = Join-Path $DataDirectory $participantLabel
 $taskSummaryPath = Join-Path $participantDirectory 'resumo_tarefas.csv'
 $splitScript = Join-Path $PSScriptRoot 'scripts\split_eyetracker.ps1'
 $mainScript = Join-Path $PSScriptRoot 'scripts\main_script_adap.py'
+
+# Somente coletas explicitamente cadastradas usam recuperacao especial.
+if ($participantLabel -in @('P00', 'P03', 'P09', 'P11')) {
+    $specialScript = Join-Path $PSScriptRoot "scripts\participantes_com_problema\$participantLabel.py"
+    & $PythonExecutable $specialScript --demo-dir $demoDirectory
+    if ($LASTEXITCODE -ne 0) {
+        throw "A recuperacao de $participantLabel falhou com codigo $LASTEXITCODE."
+    }
+    return
+}
 
 New-Item -ItemType Directory -Path $participantDirectory -Force | Out-Null
 
