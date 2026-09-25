@@ -200,7 +200,7 @@ def main():
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path.home() / "Documents/demo/graficos/analise_aoi",
+        default=Path.home() / "Documents/demo/graficos/agregados/tempos",
     )
     parser.add_argument(
         "--aoi-config", type=Path, default=raiz / "config/aoi_por_versao.json"

@@ -155,7 +155,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data-dir", type=Path, default=Path.home() / "Documents/demo/data")
     parser.add_argument("--images-dir", type=Path, default=Path.home() / "Documents/demo/telas")
-    parser.add_argument("--output-dir", type=Path, default=Path.home() / "Documents/demo/graficos/agregados")
+    parser.add_argument("--output-dir", type=Path, default=Path.home() / "Documents/demo/graficos/agregados/heatmaps")
     parser.add_argument("--aoi-config", type=Path, default=raiz / "config/aoi_por_versao.json")
     parser.add_argument("--grid-width", type=int, default=100)
     parser.add_argument("--grid-height", type=int, default=100)
