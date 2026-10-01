@@ -45,4 +45,34 @@ class FontesTest(unittest.TestCase):
             pasta=self.cria(root/'recuperados/data','P03')
             self.assertEqual(seleciona_fontes(root/'data'),[(pasta.resolve(),'omega')])
 
+    def test_p15_usa_fonte_recuperada(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.cria(root/'data', 'P15')
+            recuperada = self.cria(root/'recuperados/data', 'P15')
+            self.assertEqual(
+                seleciona_fontes(root/'data'),
+                [(recuperada.resolve(), 'omega')],
+            )
+
+    def test_p17_usa_fonte_recuperada(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.cria(root/'data', 'P17')
+            recuperada = self.cria(root/'recuperados/data', 'P17')
+            self.assertEqual(
+                seleciona_fontes(root/'data'),
+                [(recuperada.resolve(), 'omega')],
+            )
+
+    def test_p21_usa_fonte_recuperada(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.cria(root/'data', 'P21')
+            recuperada = self.cria(root/'recuperados/data', 'P21')
+            self.assertEqual(
+                seleciona_fontes(root/'data'),
+                [(recuperada.resolve(), 'omega')],
+            )
+
 if __name__ == '__main__': unittest.main()

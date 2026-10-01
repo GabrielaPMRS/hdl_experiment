@@ -6,7 +6,7 @@
 .\processa_participante.ps1 00
 ```
 
-P00, P03, P09 e P11 usam os tratamentos em `scripts/participantes_com_problema/`. Os demais usam o separador por gaps. Consulte o README dessa pasta para as estimativas temporais e limitacoes das recuperacoes.
+P00, P03, P09, P11, P15, P17 e P21 usam os tratamentos em `scripts/participantes_com_problema/`. Os demais usam o separador por gaps. Consulte o README dessa pasta para as estimativas temporais e limitacoes das recuperacoes.
 
 ## Gerar resultados agregados
 
@@ -17,7 +17,7 @@ python scripts/gera_violin_tempo_aoi.py --regiao aoi1
 python scripts/gera_tentativas_agregadas.py
 ```
 
-Resultados em `Documents/demo/graficos/agregados/`, nas subpastas `heatmaps`, `tempos` e `tentativas`. Os agregadores oculares selecionam automaticamente os recuperados de P00, P03, P09 e P11. Tentativas sao lidas dos JSONs originais. Consulte [scripts/README_AGREGADOS.md](scripts/README_AGREGADOS.md).
+Resultados em `Documents/demo/graficos/agregados/`, nas subpastas `heatmaps`, `tempos` e `tentativas`. Os agregadores oculares selecionam automaticamente os recuperados de P00, P03, P09, P11, P15, P17 e P21. Tentativas sao lidas dos JSONs originais. Consulte [scripts/README_AGREGADOS.md](scripts/README_AGREGADOS.md).
 
 ## Organizacao
 

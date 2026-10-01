@@ -7,7 +7,7 @@ python scripts/gera_heatmaps_agregados.py
 python scripts/gera_violin_tempo_aoi.py
 ```
 
-Ambos usam `fontes_agregados.py`: P00, P03, P09 e P11 sao lidos exclusivamente de `Documents/demo/recuperados/data`; os demais, de `Documents/demo/data`. Cada participante aparece uma vez. As duas pastas sao examinadas, incluindo recuperados sem pasta normal. Pastas de participantes incompletas geram erro; nao ha fallback para dados antigos.
+Ambos usam `fontes_agregados.py`: P00, P03, P09, P11, P15, P17 e P21 sao lidos exclusivamente de `Documents/demo/recuperados/data`; os demais, de `Documents/demo/data`. Cada participante aparece uma vez. As duas pastas sao examinadas, incluindo recuperados sem pasta normal. Pastas de participantes incompletas geram erro; nao ha fallback para dados antigos.
 
 O resumo precisa mapear as quatro tarefas e a condicao correta, e os quatro CSVs de fixacoes devem existir com x, y e duracao. A selecao nao exclui tarefas do P03; esta rodada e preliminar e inclui suas perdas conhecidas.
 

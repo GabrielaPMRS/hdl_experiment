@@ -27,7 +27,7 @@ $splitScript = Join-Path $PSScriptRoot 'scripts\split_eyetracker.ps1'
 $mainScript = Join-Path $PSScriptRoot 'scripts\main_script_adap.py'
 
 # Somente coletas explicitamente cadastradas usam recuperacao especial.
-if ($participantLabel -in @('P00', 'P03', 'P09', 'P11')) {
+if ($participantLabel -in @('P00', 'P03', 'P09', 'P11', 'P15', 'P17', 'P21')) {
     $specialScript = Join-Path $PSScriptRoot "scripts\participantes_com_problema\$participantLabel.py"
     & $PythonExecutable $specialScript --demo-dir $demoDirectory
     if ($LASTEXITCODE -ne 0) {
