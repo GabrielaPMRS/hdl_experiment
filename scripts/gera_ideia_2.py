@@ -1,8 +1,8 @@
-"""Gera a ideia 2 com corte do quartil superior por versao e tarefa.
+"""Gera a ideia 2 com corte pelo Q3 do tempo de aplicacao por versao e tarefa.
 
 Para cada combinacao Versao x Tarefa, o Q3 usa o tempo de aplicacao daquela
-tarefa. Linhas acima do Q3 ficam fora dos agregados. Os heatmaps sao divididos
-pelo numero de participantes para comparar grupos de tamanhos diferentes.
+tarefa. Linhas acima do Q3 ficam fora dos agregados. Os heatmaps mostram o
+tempo acumulado do grupo selecionado, sem divisao pelo numero de participantes.
 """
 
 from __future__ import annotations
@@ -12,12 +12,17 @@ import csv
 import json
 from pathlib import Path
 
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 from matplotlib.ticker import MaxNLocator
 import numpy as np
 import pandas as pd
 
 import gera_heatmaps_agregados as heatmaps
+import gera_heatmaps_agregados_aoi as aoi
 import gera_tentativas_agregadas as tentativas
 import gera_violin_tempo_aoi as tempos
 from fontes_agregados import RECUPERADOS, seleciona_fontes
@@ -127,15 +132,15 @@ def gera_heatmaps(output_dir, imagens_dir, aoi_config, fontes, incluidos, dpi):
             dados, usados = heatmaps.agrega_fixacoes(pastas, tarefa, limites)
             mapa = heatmaps.calcula_mapa(dados, limites, 100, 100)
             n = len(usados)
-            mapas[versao] = (mapa[0], mapa[1], mapa[2] / n)
+            mapas[versao] = mapa
             limites_por_versao[versao] = limites
-            metadados[versao] = (n, len(dados) / n, float(dados.duracao.sum()) / 1000.0 / n)
+            metadados[versao] = (n, len(dados), float(dados.duracao.sum()) / 1000.0)
 
         escala_maxima = max(float(mapas[v][2].max()) for v in VERSOES)
         for versao in VERSOES:
-            n, fix_media, duracao_media = metadados[versao]
+            n, fixacoes, duracao_total = metadados[versao]
             titulo = (f"{versao.capitalize()} - {tarefa} ({n} participantes; "
-                      f"{fix_media:.1f} fixacoes/p.; {duracao_media:.1f} s/p.)")
+                      f"{fixacoes} fixacoes; {duracao_total:.1f} s)")
             heatmaps.salva_individual(
                 output_dir / f"heatmap_{versao}_{tarefa}.png",
                 imagens_dir / versao / f"{tarefa}.png", mapas[versao],
@@ -144,18 +149,98 @@ def gera_heatmaps(output_dir, imagens_dir, aoi_config, fontes, incluidos, dpi):
 
         fig, eixos = plt.subplots(1, 2, figsize=(14, 8))
         for eixo, versao in zip(eixos, VERSOES):
-            n, fix_media, duracao_media = metadados[versao]
+            n, fixacoes, duracao_total = metadados[versao]
             heatmaps.desenha(
                 eixo, imagens_dir / versao / f"{tarefa}.png", mapas[versao],
                 limites_por_versao[versao],
-                f"{versao.capitalize()} ({n} participantes; {fix_media:.1f} fixacoes/p.; "
-                f"{duracao_media:.1f} s/p.)", escala_maxima,
+                f"{versao.capitalize()} ({n} participantes; {fixacoes} fixacoes; "
+                f"{duracao_total:.1f} s)", escala_maxima,
             )
-        fig.suptitle(f"Heatmaps medios por participante - {tarefa}")
+        fig.suptitle(f"Heatmaps agregados - {tarefa}")
         fig.tight_layout()
         fig.savefig(output_dir / f"comparacao_lambda_omega_{tarefa}.png",
                     dpi=dpi, bbox_inches="tight")
         plt.close(fig)
+
+
+def gera_heatmaps_aoi(output_dir, imagens_dir, aoi_config, fontes, incluidos, dpi):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    with aoi_config.open(encoding="utf-8") as arquivo:
+        configuracao = json.load(arquivo)
+
+    detalhes, resumos = [], []
+    legenda = [
+        Patch(color=aoi.COR_AOI, label="Dentro da AOI1"),
+        Patch(color=aoi.COR_FORA, label="Fora da AOI1, dentro do codigo"),
+    ]
+    for tarefa in TAREFAS:
+        mapas, limites_por_versao, titulos = {}, {}, {}
+        for versao in VERSOES:
+            pastas = [p for p, v in fontes if v == versao and (p.name, tarefa) in incluidos]
+            if not pastas:
+                raise ValueError(f"Nenhum participante incluido: {versao}/{tarefa}")
+            codigo_xy, aoi_y = aoi.limites(configuracao, versao, tarefa)
+            limites_por_versao[versao] = codigo_xy, aoi_y
+            dados, linhas = aoi.carrega_fixacoes(pastas, versao, tarefa, codigo_xy, aoi_y)
+            detalhes.extend(linhas)
+            n = len(pastas)
+            mapas[versao] = aoi.calcula_mapa(dados, codigo_xy, 160, 160)
+            fixacoes_aoi = sum(item["FixacoesAOI1"] for item in linhas)
+            tempo_aoi = sum(item["TempoAOI1Segundos"] for item in linhas)
+            resumos.append({
+                "Versao": versao,
+                "Tarefa": tarefa,
+                "Participantes": n,
+                "FixacoesAOI1": fixacoes_aoi,
+                "TempoAOI1Segundos": tempo_aoi,
+                "FixacoesForaAOI1": sum(item["FixacoesForaAOI1"] for item in linhas),
+                "TempoForaAOI1Segundos": sum(item["TempoForaAOI1Segundos"] for item in linhas),
+                "BaseAOI1Pixel": configuracao[versao][tarefa]["aoi1"][0],
+                "TopoAOI1Pixel": configuracao[versao][tarefa]["aoi1"][1],
+            })
+            titulos[versao] = (
+                f"{versao.capitalize()} ({n} participantes; AOI1: "
+                f"{fixacoes_aoi} fixacoes, {tempo_aoi:.1f} s)"
+            )
+
+        escala_maxima = max(float(mapas[v][2].max()) for v in VERSOES)
+        for resumo in resumos[-len(VERSOES):]:
+            resumo["EscalaMaximaCompartilhada"] = escala_maxima
+
+        for versao in VERSOES:
+            fig, ax = plt.subplots(figsize=(7, 8))
+            codigo_xy, aoi_y = limites_por_versao[versao]
+            aoi.desenha(ax, imagens_dir / versao / f"{tarefa}.png", mapas[versao],
+                       codigo_xy, aoi_y, titulos[versao], escala_maxima)
+            fig.legend(handles=legenda, loc="lower center", ncol=2, frameon=False)
+            fig.tight_layout(rect=(0, 0.055, 1, 1))
+            fig.savefig(output_dir / f"heatmap_aoi_{versao}_{tarefa}.png",
+                        dpi=dpi, bbox_inches="tight")
+            plt.close(fig)
+
+        fig, eixos = plt.subplots(1, 2, figsize=(14, 8))
+        for ax, versao in zip(eixos, VERSOES):
+            codigo_xy, aoi_y = limites_por_versao[versao]
+            aoi.desenha(ax, imagens_dir / versao / f"{tarefa}.png", mapas[versao],
+                       codigo_xy, aoi_y, titulos[versao], escala_maxima)
+        fig.suptitle(f"Heatmaps agregados com AOI1 - {tarefa}")
+        fig.legend(handles=legenda, loc="lower center", ncol=2, frameon=False)
+        fig.text(0.5, 0.035,
+                 "Intensidade: tempo acumulado de fixacao do grupo; mesma escala nos dois paineis.",
+                 ha="center", fontsize=9)
+        fig.tight_layout(rect=(0, 0.07, 1, 0.97))
+        fig.savefig(output_dir / f"comparacao_lambda_omega_aoi_{tarefa}.png",
+                    dpi=dpi, bbox_inches="tight")
+        plt.close(fig)
+
+    pd.DataFrame(detalhes).to_csv(
+        output_dir / "fixacoes_aoi_por_participante.csv", index=False,
+        encoding="utf-8-sig", float_format="%.3f",
+    )
+    pd.DataFrame(resumos).to_csv(
+        output_dir / "resumo_aoi_por_versao_tarefa.csv", index=False,
+        encoding="utf-8-sig", float_format="%.3f",
+    )
 
 
 def filtra_linhas(dados, incluidos):
@@ -243,6 +328,8 @@ def main():
     parser.add_argument("--output-dir", type=Path,
                         help="Padrao: DEMO/graficos/agregados/ideia_2")
     parser.add_argument("--dpi", type=int, default=200)
+    parser.add_argument("--only-aoi-heatmaps", action="store_true",
+                        help="Atualiza apenas a subpasta heatmaps_aoi1")
     args = parser.parse_args()
 
     demo_dir = args.demo_dir.resolve()
@@ -255,11 +342,23 @@ def main():
     incluidos = conjunto_incluido(selecao)
     salva_selecao(output_dir, selecao)
 
+    if args.only_aoi_heatmaps:
+        gera_heatmaps_aoi(output_dir / "heatmaps_aoi1", demo_dir / "telas",
+                          aoi_config, fontes, incluidos, args.dpi)
+        salva_fontes(output_dir / "heatmaps_aoi1" / "fontes_utilizadas.csv",
+                      fontes, incluidos, "dados", demo_dir)
+        print(f"Heatmaps AOI1 da ideia 2 gerados em: {output_dir / 'heatmaps_aoi1'}")
+        return
+
     gera_heatmaps(output_dir / "heatmaps", demo_dir / "telas", aoi_config,
                    fontes, incluidos, args.dpi)
+    gera_heatmaps_aoi(output_dir / "heatmaps_aoi1", demo_dir / "telas", aoi_config,
+                      fontes, incluidos, args.dpi)
     gera_tempos(output_dir / "tempos", aoi_config, fontes, incluidos, args.dpi)
     gera_tentativas(output_dir / "tentativas", demo_dir / "coletas", incluidos, args.dpi)
     salva_fontes(output_dir / "heatmaps" / "fontes_utilizadas.csv",
+                  fontes, incluidos, "dados", demo_dir)
+    salva_fontes(output_dir / "heatmaps_aoi1" / "fontes_utilizadas.csv",
                   fontes, incluidos, "dados", demo_dir)
     salva_fontes(output_dir / "tempos" / "fontes_utilizadas.csv",
                   fontes, incluidos, "dados", demo_dir)
