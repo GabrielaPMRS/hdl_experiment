@@ -19,6 +19,7 @@ Para outra localizacao use `--data-dir` e, se necessario, `--recovered-data-dir`
 
 Todos os scripts agora usam `Documents/demo/graficos/agregados`:
 - `heatmaps/`: mapas Lambda/Omega e comparacoes por tarefa.
+- `heatmaps_aoi1/`: comparacoes opcionais com AOI1 vermelha e restante do painel de codigo verde. Gere com `python scripts/gera_heatmaps_agregados_aoi.py`. As duas cores usam a mesma densidade de tempo acumulado e a mesma escala entre Lambda e Omega para cada tarefa; os limites da AOI1 vem de `config/aoi_por_versao.json`. Os CSVs e os mapas usam as mesmas coordenadas corrigidas no processamento individual, sem deslocamento adicional.
 - `tempos/`: violin plots e tabelas de tempo de fixacao no codigo ou AOI1.
 - `tentativas/`: comparativo de tentativas, contagens por participante/tarefa, resumo por grupo e fontes dos JSONs.
 - `dados_participantes/`: dois CSVs, um por versao, com metricas por participante e tarefa, experiencia e indicadores exploratorios de outlier.

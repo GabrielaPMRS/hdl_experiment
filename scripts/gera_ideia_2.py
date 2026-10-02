@@ -124,7 +124,7 @@ def gera_heatmaps(output_dir, imagens_dir, aoi_config, fontes, incluidos, dpi):
         for versao in VERSOES:
             pastas = [p for p, v in fontes if v == versao and (p.name, tarefa) in incluidos]
             limites = heatmaps.carrega_limites_codigo(aoi_config, versao, tarefa)
-            dados, usados = heatmaps.agrega_fixacoes(pastas, tarefa, limites, 25.0)
+            dados, usados = heatmaps.agrega_fixacoes(pastas, tarefa, limites)
             mapa = heatmaps.calcula_mapa(dados, limites, 100, 100)
             n = len(usados)
             mapas[versao] = (mapa[0], mapa[1], mapa[2] / n)

@@ -8,6 +8,8 @@
 
 P00, P03, P09, P11, P15, P17, P21 e P25 usam os tratamentos em `scripts/participantes_com_problema/`. Os demais usam o separador por gaps. Consulte o README dessa pasta para as estimativas temporais e limitacoes das recuperacoes.
 
+Para corrigir a posicao vertical dos olhos, altere somente o numero do participante em `DESLOCAMENTO_Y_PIXELS`, no arquivo `scripts/main_script_adap.py`. Valor positivo move as fixacoes para baixo na imagem; negativo move para cima. O valor vale para as quatro tarefas. Depois, execute novamente `processa_participante.ps1` para cada participante alterado: os CSVs de fixacoes e os graficos individuais sao recalculados. Os agregados usam esses CSVs quando forem gerados novamente, sem deslocamento adicional.
+
 ## Gerar resultados agregados
 
 ```powershell

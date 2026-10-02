@@ -192,17 +192,40 @@ def salvaImagem(plt,imagem,dpiVal=200):
 # =========================
 # Gaze points correction
 # =========================
-def correctPointsYaxis(participante, tarefa):
-    dy = 0
-    
-    if participante == "001":
-        dy = 15
-    elif participante == "002":
-        dy = 30
-    elif participante == "032":
-        dy = 30
+# Ajuste vertical em pixels para cada participante, aplicado em todas as tarefas.
+# Positivo desloca os pontos para BAIXO na imagem; negativo, para CIMA.
+# P00 a P25; deixe 0 quando nao precisar de ajuste.
+DESLOCAMENTO_Y_PIXELS = {
+    "P00": -10,
+    "P01": -25,
+    "P02": -10,
+    "P03": 0,
+    "P04": 30,
+    "P05": 30,
+    "P06": -12,
+    "P07": 0,
+    "P08": -40,
+    "P09": -14,
+    "P10": -18,
+    "P11": 36,
+    "P12": 30,
+    "P13":-30,
+    "P14": 10,
+    "P15": 20,
+    "P16": 30,
+    "P17": 27,
+    "P18": -22,
+    "P19": 20,
+    "P20": 100,
+    "P21": 30,
+    "P23": 13,
+    "P24": -12,
+    "P25": -12,
+}
 
-    return dy
+
+def correctPointsYaxis(participante, tarefa):
+    return DESLOCAMENTO_Y_PIXELS.get(participante, 0)
 
 # =========================
 # Visualization
@@ -580,7 +603,8 @@ def main():
             
             # serve para colocar o eixo (0,0) no canto superior esquerdo da tela
             df.y = y-df.y
-            df.y = df.y + dy
+            # Y do grafico cresce para cima: subtrair move para baixo na imagem.
+            df.y = df.y - dy
             df.x = df.x + dx
             
 
