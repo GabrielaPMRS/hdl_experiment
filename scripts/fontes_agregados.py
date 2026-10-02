@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 import pandas as pd
 
-RECUPERADOS = frozenset({'P00', 'P03', 'P09', 'P11', 'P15', 'P17', 'P21'})
+RECUPERADOS = frozenset({'P00', 'P03', 'P09', 'P11', 'P15', 'P17', 'P21', 'P25'})
 TAREFAS = {'T01', 'T02', 'T04', 'T05'}
 
 

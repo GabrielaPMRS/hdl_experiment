@@ -7,7 +7,7 @@ python scripts/gera_heatmaps_agregados.py
 python scripts/gera_violin_tempo_aoi.py
 ```
 
-Ambos usam `fontes_agregados.py`: P00, P03, P09, P11, P15, P17 e P21 sao lidos exclusivamente de `Documents/demo/recuperados/data`; os demais, de `Documents/demo/data`. Cada participante aparece uma vez. As duas pastas sao examinadas, incluindo recuperados sem pasta normal. Pastas de participantes incompletas geram erro; nao ha fallback para dados antigos.
+Ambos usam `fontes_agregados.py`: P00, P03, P09, P11, P15, P17, P21 e P25 sao lidos exclusivamente de `Documents/demo/recuperados/data`; os demais, de `Documents/demo/data`. Cada participante aparece uma vez. As duas pastas sao examinadas, incluindo recuperados sem pasta normal. Pastas de participantes incompletas geram erro; nao ha fallback para dados antigos.
 
 O resumo precisa mapear as quatro tarefas e a condicao correta, e os quatro CSVs de fixacoes devem existir com x, y e duracao. A selecao nao exclui tarefas do P03; esta rodada e preliminar e inclui suas perdas conhecidas.
 
@@ -21,7 +21,10 @@ Todos os scripts agora usam `Documents/demo/graficos/agregados`:
 - `heatmaps/`: mapas Lambda/Omega e comparacoes por tarefa.
 - `tempos/`: violin plots e tabelas de tempo de fixacao no codigo ou AOI1.
 - `tentativas/`: comparativo de tentativas, contagens por participante/tarefa, resumo por grupo e fontes dos JSONs.
+- `dados_participantes/`: dois CSVs, um por versao, com metricas por participante e tarefa, experiencia e indicadores exploratorios de outlier.
 
 Tentativas: `python scripts/gera_tentativas_agregadas.py`. Le diretamente `coletas/Pxx/resultadoPxx.json`, usando codigoId (nao ordem de execucao). Barras agrupadas mostram a media de tentativas por participante, com valores acima das barras e eixo vertical comum entre tarefas. Contagens incluem a tentativa correta, conforme registradas pelo aplicativo. Esta metrica nao depende de dados oculares recuperados. Para outra origem use `--coletas-dir`; `--output-dir` continua disponivel nos tres scripts.
 
 Os arquivos produzidos anteriormente fora dessas subpastas foram preservados; os novos comandos atualizam as subpastas acima.
+
+Dados individuais: `python scripts/gera_dados_participantes.py`. As fixacoes e o tempo de fixacao no codigo usam exatamente o mesmo filtro dos heatmaps agregados. Os indicadores IQR, ranks e razoes para a mediana servem para inspecao exploratoria; nao excluem registros automaticamente.

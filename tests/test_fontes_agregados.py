@@ -75,4 +75,14 @@ class FontesTest(unittest.TestCase):
                 [(recuperada.resolve(), 'omega')],
             )
 
+    def test_p25_usa_fonte_recuperada(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.cria(root/'data', 'P25')
+            recuperada = self.cria(root/'recuperados/data', 'P25')
+            self.assertEqual(
+                seleciona_fontes(root/'data'),
+                [(recuperada.resolve(), 'omega')],
+            )
+
 if __name__ == '__main__': unittest.main()
