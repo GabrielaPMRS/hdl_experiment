@@ -2,7 +2,7 @@
   "lambda": {
     "T01": {
       "codigo": [
-        800,
+        810,
         180
       ],
       "linhasCodigo": [
@@ -210,12 +210,11 @@
         264
       ],
       "aoi1": [
-        520,
-        452
-      ],
-      "linhasAoi1": [
         470,
         410
+      ],
+      "linhasAoi1": [
+        400
       ],
       "aoi2": [
         null
