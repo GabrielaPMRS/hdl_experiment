@@ -7,6 +7,7 @@ Os heatmaps mantem as fixacoes de todo o codigo e distinguem a AOI1 pela cor.
 
 from __future__ import annotations
 
+from caminhos import raiz_dados
 import argparse
 import json
 from pathlib import Path
@@ -82,7 +83,7 @@ def salva_selecao_aoi(output_dir, selecao):
 def main():
     raiz = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--demo-dir", type=Path, default=Path.home() / "Documents/demo")
+    parser.add_argument("--demo-dir", type=Path, default=raiz_dados())
     parser.add_argument("--output-dir", type=Path,
                         help="Padrao: DEMO/graficos/agregados/ideia_3")
     parser.add_argument("--dpi", type=int, default=200)

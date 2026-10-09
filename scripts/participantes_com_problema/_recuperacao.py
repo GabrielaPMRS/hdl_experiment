@@ -9,6 +9,13 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 
+def confere_hash(conteudo, esperado):
+    """Aceita somente o original auditado ou a conversao CRLF/LF pelo Git."""
+    lf = conteudo.replace(b'\r\n', b'\n')
+    variantes = (conteudo, lf, lf.replace(b'\n', b'\r\n'))
+    return any(hashlib.sha256(dados).hexdigest() == esperado.lower() for dados in variantes)
+
+
 def recover(participant, hashes, reason):
     parser = argparse.ArgumentParser(description=reason)
     parser.add_argument('--demo-dir', type=Path, required=True)
@@ -19,7 +26,7 @@ def recover(participant, hashes, reason):
     raw = source / f'data{participant}.txt'
     result = source / f'resultado{participant}.json'
     for path, expected in zip((raw, result), hashes):
-        if hashlib.sha256(path.read_bytes()).hexdigest() != expected.lower():
+        if not confere_hash(path.read_bytes(), expected):
             raise ValueError(f'Coleta diferente da auditada: {path}. Revise o tratamento antes de continuar.')
     session = json.loads(result.read_text(encoding='utf-8-sig'))
     questions = sorted(session['perguntas'], key=lambda q: q['ordemExecucao'])

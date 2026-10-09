@@ -7,7 +7,7 @@ python scripts/gera_heatmaps_agregados.py
 python scripts/gera_violin_tempo_aoi.py
 ```
 
-Ambos usam `fontes_agregados.py`: P00, P03, P09, P11, P15, P17, P21 e P25 sao lidos exclusivamente de `Documents/demo/recuperados/data`; os demais, de `Documents/demo/data`. Cada participante aparece uma vez. As duas pastas sao examinadas, incluindo recuperados sem pasta normal. Pastas de participantes incompletas geram erro; nao ha fallback para dados antigos.
+Ambos usam `fontes_agregados.py`: P00, P03, P09, P11, P15, P17, P21 e P25 sao lidos exclusivamente de `HDL-Experiment-Data/recuperados/data`; os demais, de `HDL-Experiment-Data/data`. Cada participante aparece uma vez. As duas pastas sao examinadas, incluindo recuperados sem pasta normal. Pastas de participantes incompletas geram erro; nao ha fallback para dados antigos.
 
 O resumo precisa mapear as quatro tarefas e a condicao correta, e os quatro CSVs de fixacoes devem existir com x, y e duracao. A selecao nao exclui tarefas do P03; esta rodada e preliminar e inclui suas perdas conhecidas.
 
@@ -17,7 +17,7 @@ Para outra localizacao use `--data-dir` e, se necessario, `--recovered-data-dir`
 
 ## Organizacao das saidas
 
-Todos os scripts agora usam `Documents/demo/graficos/agregados`:
+Todos os scripts agora usam `HDL-Experiment-Data/graficos/agregados`:
 - `heatmaps/`: mapas Lambda/Omega e comparacoes por tarefa.
 - `heatmaps_aoi1/`: comparacoes opcionais com AOI1 vermelha e restante do painel de codigo verde. Gere com `python scripts/gera_heatmaps_agregados_aoi.py`. As duas cores usam a mesma densidade de tempo acumulado e a mesma escala entre Lambda e Omega para cada tarefa; os limites da AOI1 vem de `config/aoi_por_versao.json`. Os CSVs e os mapas usam as mesmas coordenadas corrigidas no processamento individual, sem deslocamento adicional.
 - `tempos/`: violin plots e tabelas de tempo de fixacao no codigo ou AOI1.

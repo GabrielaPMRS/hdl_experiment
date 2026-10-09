@@ -8,6 +8,7 @@ lado a lado. A escala de cores e identica entre Lambda e Omega.
 
 from __future__ import annotations
 
+from caminhos import raiz_dados
 import argparse
 import json
 from pathlib import Path
@@ -146,9 +147,9 @@ def salva_individual(caminho, imagem, mapa, limites, titulo, escala_maxima, dpi)
 def main() -> None:
     raiz = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--data-dir", type=Path, default=Path.home() / "Documents/demo/data")
-    parser.add_argument("--images-dir", type=Path, default=Path.home() / "Documents/demo/telas")
-    parser.add_argument("--output-dir", type=Path, default=Path.home() / "Documents/demo/graficos/agregados/heatmaps")
+    parser.add_argument("--data-dir", type=Path, default=raiz_dados() / "data")
+    parser.add_argument("--images-dir", type=Path, default=raiz_dados() / "telas")
+    parser.add_argument("--output-dir", type=Path, default=raiz_dados() / "graficos/agregados/heatmaps")
     parser.add_argument("--aoi-config", type=Path, default=raiz / "config/aoi_por_versao.json")
     parser.add_argument("--grid-width", type=int, default=100)
     parser.add_argument("--grid-height", type=int, default=100)

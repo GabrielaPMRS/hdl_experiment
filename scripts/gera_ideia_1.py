@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from caminhos import raiz_dados
 import argparse
 import csv
 import os
@@ -66,7 +67,7 @@ def main():
     raiz = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--demo-dir", type=Path, default=Path.home() / "Documents/demo"
+        "--demo-dir", type=Path, default=raiz_dados()
     )
     parser.add_argument(
         "--output-dir",

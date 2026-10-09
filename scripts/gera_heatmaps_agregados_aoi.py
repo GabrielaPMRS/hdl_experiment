@@ -8,6 +8,7 @@ cada fixacao pelas mesmas coordenadas corrigidas usadas nos mapas.
 
 from __future__ import annotations
 
+from caminhos import raiz_dados
 import argparse
 import json
 from pathlib import Path
@@ -155,14 +156,14 @@ def main():
     raiz = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data-dir", type=Path,
-                        default=Path.home() / "Documents/demo/data")
+                        default=raiz_dados() / "data")
     parser.add_argument("--recovered-data-dir", type=Path)
     parser.add_argument("--images-dir", type=Path,
-                        default=Path.home() / "Documents/demo/telas")
+                        default=raiz_dados() / "telas")
     parser.add_argument("--aoi-config", type=Path,
                         default=raiz / "config/aoi_por_versao.json")
     parser.add_argument("--output-dir", type=Path,
-                        default=Path.home() / "Documents/demo/graficos/agregados/heatmaps_aoi1")
+                        default=raiz_dados() / "graficos/agregados/heatmaps_aoi1")
     parser.add_argument("--grid-size", type=int, default=160)
     parser.add_argument("--dpi", type=int, default=200)
     parser.add_argument("--permitir-grupos-desiguais", action="store_true")

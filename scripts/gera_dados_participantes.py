@@ -7,6 +7,7 @@ heatmaps agregados.
 
 from __future__ import annotations
 
+from caminhos import raiz_dados
 import argparse
 import json
 from pathlib import Path
@@ -221,7 +222,7 @@ def main():
     raiz = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--data-dir", type=Path, default=Path.home() / "Documents/demo/data"
+        "--data-dir", type=Path, default=raiz_dados() / "data"
     )
     parser.add_argument(
         "--recovered-data-dir",
@@ -231,7 +232,7 @@ def main():
     parser.add_argument(
         "--coletas-dir",
         type=Path,
-        default=Path.home() / "Documents/demo/coletas",
+        default=raiz_dados() / "coletas",
     )
     parser.add_argument(
         "--aoi-config", type=Path, default=raiz / "config/aoi_por_versao.json"
@@ -239,8 +240,7 @@ def main():
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path.home()
-        / "Documents/demo/graficos/agregados/dados_participantes",
+        default=raiz_dados() / "graficos/agregados/dados_participantes",
     )
     args = parser.parse_args()
 

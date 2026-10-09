@@ -7,6 +7,7 @@ ponto representativo esta dentro da regiao selecionada.
 
 from __future__ import annotations
 
+from caminhos import raiz_dados
 import argparse
 import json
 from pathlib import Path
@@ -195,12 +196,12 @@ def main():
     raiz = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--data-dir", type=Path, default=Path.home() / "Documents/demo/data"
+        "--data-dir", type=Path, default=raiz_dados() / "data"
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path.home() / "Documents/demo/graficos/agregados/tempos",
+        default=raiz_dados() / "graficos/agregados/tempos",
     )
     parser.add_argument(
         "--aoi-config", type=Path, default=raiz / "config/aoi_por_versao.json"

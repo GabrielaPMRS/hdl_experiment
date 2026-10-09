@@ -1,6 +1,39 @@
 # Processamento do experimento HDL
 
-## Processar um participante
+## Ambiente Linux e caminho dos dados
+
+A raiz dos dados e resolvida em `scripts/caminhos.py`, a partir da localizacao
+deste repositorio (independente da pasta atual do terminal). Por padrao usa
+`../HDL-Experiment-Data`, que neste computador corresponde a
+`/home/gaber/dev/easy_academico/hdl/HDL-Experiment-Data`.
+As subpastas `coletas`, `data`, `recuperados`, `telas` e `graficos` mantem sua estrutura.
+Para outra localizacao, defina `HDL_DATA_ROOT`; os argumentos de caminho de cada
+script continuam tendo precedencia. No PowerShell, o processamento tambem aceita
+`-DemoDirectory`.
+
+Prepare o Python uma vez, na raiz deste repositorio:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
+
+Para reprocessar no Linux, inclusive participantes com recuperacao especial:
+
+```bash
+python scripts/processa_participante.py 01
+python scripts/processa_participante.py 00
+```
+
+`--only-split` gera somente os recortes e resumos. O separador Python conserva
+as regras do PowerShell: primeiros cinco gaps >= 5 s, quatro tarefas, sem
+remover coordenadas negativas. O reprocessamento atualiza os derivados do
+participante; os arquivos originais em `coletas` sao a entrada.
+Os graficos sao salvos sem exigir uma janela grafica (backend Agg).
+O script `inicia_experimento.ps1` continua especifico da coleta Windows/Tobii.
+
+## Processar um participante no Windows
 
 ```powershell
 .\processa_participante.ps1 00
@@ -20,7 +53,7 @@ python scripts/gera_tentativas_agregadas.py
 python scripts/gera_dados_participantes.py
 ```
 
-Resultados em `Documents/demo/graficos/agregados/`, nas subpastas `heatmaps`, `tempos`, `tentativas` e `dados_participantes`. Os agregadores oculares selecionam automaticamente os recuperados de P00, P03, P09, P11, P15, P17, P21 e P25. Tentativas sao lidas dos JSONs originais. Consulte [scripts/README_AGREGADOS.md](scripts/README_AGREGADOS.md).
+Resultados em `HDL-Experiment-Data/graficos/agregados/`, nas subpastas `heatmaps`, `tempos`, `tentativas` e `dados_participantes`. Os agregadores oculares selecionam automaticamente os recuperados de P00, P03, P09, P11, P15, P17, P21 e P25. Tentativas sao lidas dos JSONs originais. Consulte [scripts/README_AGREGADOS.md](scripts/README_AGREGADOS.md).
 
 ## Organizacao
 
@@ -31,7 +64,7 @@ Resultados em `Documents/demo/graficos/agregados/`, nas subpastas `heatmaps`, `t
 - `tests/`: verificacoes da selecao de dados para os agregadores.
 - `output/`: documentos auxiliares gerados.
 
-As coletas e os resultados ficam em `Documents/demo`, fora deste repositorio. `tmp/` e reservada a trabalho temporario e ignorada pelo Git; nao e necessaria ao processamento. Os diagnosticos pontuais do primeiro dia foram arquivados fora do repositorio em `Documents/demo/arquivo_diagnosticos/limpeza_repositorio`.
+As coletas e os resultados ficam em `HDL-Experiment-Data`, fora deste repositorio. `tmp/` e reservada a trabalho temporario e ignorada pelo Git; nao e necessaria ao processamento. Os diagnosticos pontuais do primeiro dia foram arquivados fora do repositorio em `HDL-Experiment-Data/arquivo_diagnosticos/limpeza_repositorio`.
 
 ## Verificar a selecao das fontes
 

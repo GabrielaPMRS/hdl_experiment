@@ -4,7 +4,9 @@ param(
 
     [string]$PythonExecutable = 'python',
 
-    [double]$MinimumGapSeconds = 5.0
+    [double]$MinimumGapSeconds = 5.0,
+
+    [string]$DemoDirectory = $env:HDL_DATA_ROOT
 )
 
 $ErrorActionPreference = 'Stop'
@@ -13,8 +15,9 @@ if ($participantNumber -notmatch '^\d+$') {
     throw 'Participante invalido. Use 00, 01, 02... ou P00, P01, P02...'
 }
 $participantLabel = 'P{0:D2}' -f [int]$participantNumber
-$documentsDirectory = [Environment]::GetFolderPath('MyDocuments')
-$demoDirectory = Join-Path $documentsDirectory 'demo'
+if (-not $DemoDirectory) {
+    $DemoDirectory = Join-Path (Split-Path $PSScriptRoot -Parent) 'HDL-Experiment-Data'
+}
 $collectionDirectory = Join-Path (Join-Path $demoDirectory 'coletas') $participantLabel
 $EyeTrackerFile = Join-Path $collectionDirectory "data$participantLabel.txt"
 $ExperimentJson = Join-Path $collectionDirectory "resultado$participantLabel.json"

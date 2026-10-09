@@ -1,4 +1,5 @@
 """Compara tentativas registradas no aplicativo, por tarefa e condicao."""
+from caminhos import raiz_dados
 import argparse
 import json
 from pathlib import Path
@@ -78,8 +79,8 @@ def gera_grafico(dados, caminho, dpi):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--coletas-dir', type=Path, default=Path.home()/'Documents/demo/coletas')
-    parser.add_argument('--output-dir', type=Path, default=Path.home()/'Documents/demo/graficos/agregados/tentativas')
+    parser.add_argument('--coletas-dir', type=Path, default=raiz_dados() / "coletas")
+    parser.add_argument('--output-dir', type=Path, default=raiz_dados() / "graficos/agregados/tentativas")
     parser.add_argument('--dpi', type=int, default=200)
     args = parser.parse_args()
     dados, fontes = carrega_tentativas(args.coletas_dir)

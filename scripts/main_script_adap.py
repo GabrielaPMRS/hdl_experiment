@@ -1,3 +1,4 @@
+from caminhos import raiz_dados
 # =========================
 # Imports
 # =========================
@@ -13,7 +14,7 @@ import pandas as pd
 import scipy.stats as st
 
 import matplotlib
-matplotlib.use('TkAgg')
+matplotlib.use(os.environ.get('MPLBACKEND', 'Agg'))
 import matplotlib.pyplot as plt
 import matplotlib.pyplot as pl
 
@@ -516,15 +517,15 @@ def main():
     parser.add_argument("--participant", default="P00")
     parser.add_argument(
         "--data-dir",
-        default="C:/Users/EASY acadêmico/Documents/demo/data"
+        default=str(raiz_dados() / "data")
     )
     parser.add_argument(
         "--images-dir",
-        default="C:/Users/EASY acadêmico/Documents/demo/telas"
+        default=str(raiz_dados() / "telas")
     )
     parser.add_argument(
         "--graphs-dir",
-        default="C:/Users/EASY acadêmico/Documents/demo/graficos"
+        default=str(raiz_dados() / "graficos")
     )
     parser.add_argument(
         "--task-summary",

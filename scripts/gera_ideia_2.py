@@ -7,6 +7,7 @@ tempo acumulado do grupo selecionado, sem divisao pelo numero de participantes.
 
 from __future__ import annotations
 
+from caminhos import raiz_dados
 import argparse
 import csv
 import json
@@ -324,7 +325,7 @@ def gera_tentativas(output_dir, coletas_dir, incluidos, dpi):
 def main():
     raiz = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--demo-dir", type=Path, default=Path.home() / "Documents/demo")
+    parser.add_argument("--demo-dir", type=Path, default=raiz_dados())
     parser.add_argument("--output-dir", type=Path,
                         help="Padrao: DEMO/graficos/agregados/ideia_2")
     parser.add_argument("--dpi", type=int, default=200)
