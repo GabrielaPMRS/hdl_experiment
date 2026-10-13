@@ -45,15 +45,19 @@ Para corrigir a posicao vertical dos olhos, altere somente o numero do participa
 
 ## Gerar resultados agregados
 
-```powershell
-python scripts/gera_heatmaps_agregados.py
-python scripts/gera_violin_tempo_aoi.py
-python scripts/gera_violin_tempo_aoi.py --regiao aoi1
-python scripts/gera_tentativas_agregadas.py
-python scripts/gera_dados_participantes.py
+```bash
+python scripts/gera_desempenho_tarefas.py
+python scripts/gera_heatmaps_agregados.py --dpi 300
+python scripts/gera_heatmaps_agregados_aoi.py --dpi 300
 ```
 
-Resultados em `HDL-Experiment-Data/graficos/agregados/`, nas subpastas `heatmaps`, `tempos`, `tentativas` e `dados_participantes`. Os agregadores oculares selecionam automaticamente os recuperados de P00, P03, P09, P11, P15, P17, P21 e P25. Tentativas sao lidas dos JSONs originais. Consulte [scripts/README_AGREGADOS.md](scripts/README_AGREGADOS.md).
+Resultados em `HDL-Experiment-Data/graficos/agregados/`, nas subpastas
+`execution_time`, `attempts`, `heatmaps` e `heatmaps_aoi1`. Para cada caso,
+comparam **With Atom** e **Without Atom**, incluindo todos os participantes.
+Tempo e tentativas têm quatro comparativos de violinos por caso e um
+comparativo geral com a soma das quatro tarefas de cada participante. Os heatmaps
+mostram totais no título e escala numérica; a modalidade AOI usa somente as
+fixações dentro da região de interesse. Consulte [scripts/README_AGREGADOS.md](scripts/README_AGREGADOS.md).
 
 ## Organizacao
 

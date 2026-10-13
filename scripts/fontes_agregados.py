@@ -2,6 +2,7 @@
 import csv
 import re
 from pathlib import Path
+from plot_common import LABELS
 import pandas as pd
 
 RECUPERADOS = frozenset({'P00', 'P03', 'P09', 'P11', 'P15', 'P17', 'P21', 'P25'})
@@ -53,12 +54,12 @@ def seleciona_fontes(data_dir, recovered_dir=None):
 
 
 def salva_fontes(fontes, output_dir):
-    caminho = Path(output_dir) / 'fontes_utilizadas.csv'
+    caminho = Path(output_dir) / 'sources.csv'
     caminho.parent.mkdir(parents=True, exist_ok=True)
     with caminho.open('w', newline='', encoding='utf-8-sig') as file:
         writer = csv.writer(file)
-        writer.writerow(['Participante', 'Versao', 'Origem', 'Pasta', 'Resumo'])
+        writer.writerow(['Participant', 'Condition', 'Processing', 'Folder', 'TaskSummary'])
         for pasta, versao in fontes:
-            writer.writerow([pasta.name, versao,
-                             'recuperado' if pasta.name in RECUPERADOS else 'normal',
+            writer.writerow([pasta.name, LABELS[versao],
+                             'recovered' if pasta.name in RECUPERADOS else 'standard',
                              str(pasta), str(pasta / 'resumo_tarefas.csv')])

@@ -1,10 +1,4 @@
-"""Gera heatmaps agregados com AOI1 vermelha e restante do codigo verde.
-
-A densidade usa todas as fixacoes no codigo e a duracao acumulada, como no
-gerador principal. Em cada tarefa, Lambda e Omega compartilham o mesmo limite
-de intensidade. A cor depende da posicao no mapa; as metricas do CSV classificam
-cada fixacao pelas mesmas coordenadas corrigidas usadas nos mapas.
-"""
+"""Aggregate only AOI fixations, with a shared accumulated-time density scale."""
 
 from __future__ import annotations
 
@@ -18,11 +12,11 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
-from matplotlib.patches import Patch
 import numpy as np
 import pandas as pd
 
 from fontes_agregados import salva_fontes, seleciona_fontes
+from plot_common import LABELS, HEAT_CMAP, case_label, heat_scale
 from gera_heatmaps_agregados import (
     ALTURA_TELA,
     LARGURA_TELA,
@@ -30,10 +24,6 @@ from gera_heatmaps_agregados import (
     VERSOES,
     calcula_mapa,
 )
-
-
-COR_AOI = np.array((185, 28, 28)) / 255.0
-COR_FORA = np.array((21, 128, 61)) / 255.0
 
 
 def limites(configuracao: dict, versao: str, tarefa: str):
@@ -88,9 +78,9 @@ def carrega_fixacoes(pastas, versao, tarefa, codigo_xy, aoi_y):
             "ArquivoFixacoes": str(caminho.resolve()),
         })
         if not dados.empty:
-            quadros.append(dados)
+            quadros.append(dados.loc[dentro])
     if not quadros:
-        raise ValueError(f"Nenhuma fixacao no codigo para {versao}/{tarefa}")
+        return pd.DataFrame(columns=["x", "y", "duracao"]), linhas
     return pd.concat(quadros, ignore_index=True), linhas
 
 
@@ -100,17 +90,10 @@ def desenha(ax, imagem, mapa, codigo_xy, aoi_y, titulo, escala_maxima):
     ax.imshow(mpimg.imread(imagem), extent=(0, LARGURA_TELA, 0, ALTURA_TELA),
               zorder=0, aspect="auto")
 
-    # Uma unica densidade e um unico maximo: a cor indica a regiao do pixel,
-    # enquanto a opacidade representa a mesma duracao acumulada nos dois grupos.
-    intensidade = np.clip(densidade / escala_maxima, 0.0, 1.0)
-    rgba = np.empty((*densidade.shape, 4), dtype=float)
-    dentro = (yy >= aoi_y[0]) & (yy <= aoi_y[1])
-    rgba[..., :3] = np.where(dentro[..., None], COR_AOI, COR_FORA)
-    rgba[..., 3] = np.where(intensidade < 0.01, 0.0, 0.88 * intensidade ** 0.65)
-    ax.imshow(rgba.transpose(1, 0, 2), extent=(xmin, xmax, ymin, ymax),
-              origin="lower", interpolation="nearest", zorder=1, aspect="auto")
-    for y in aoi_y:
-        ax.axhline(y, color="#7f1d1d", linestyle="--", linewidth=1.2, zorder=2)
+    # Density is estimated from AOI fixations only. Clip kernel tails at AOI edges.
+    masked = np.ma.masked_where((yy < aoi_y[0]) | (yy > aoi_y[1]), densidade)
+    ax.pcolormesh(xx, yy, masked, cmap=HEAT_CMAP, vmin=0,
+                  vmax=max(escala_maxima, 1e-12), shading="gouraud", zorder=1)
     ax.set(xlim=(xmin, xmax), ylim=(ymin, ymax), title=titulo,
            xlabel="x-coordinate", ylabel="y-coordinate")
 
@@ -119,35 +102,18 @@ def salva_graficos(output_dir, tarefa, mapas, metadados, limites_por_versao,
                    imagens_dir, escala_maxima, dpi):
     def titulo(versao):
         item = metadados[versao]
-        return (f"{versao.capitalize()} ({item['Participantes']} participantes; "
-                f"AOI1: {item['FixacoesAOI1']} fixacoes, "
-                f"{item['TempoAOI1Segundos']:.1f} s)")
+        return (f"{LABELS[versao]} (n={item['Participantes']})\n"
+                f"AOI total: {item['FixacoesAOI1']} fixations; "
+                f"{item['TempoAOI1Segundos']:.1f} s")
 
-    legenda = [Patch(color=COR_AOI, label="Dentro da AOI1"),
-               Patch(color=COR_FORA, label="Fora da AOI1, dentro do codigo")]
-    for versao in VERSOES:
-        fig, ax = plt.subplots(figsize=(7, 8))
-        codigo_xy, aoi_y = limites_por_versao[versao]
-        desenha(ax, imagens_dir / versao / f"{tarefa}.png", mapas[versao],
-                codigo_xy, aoi_y, titulo(versao), escala_maxima)
-        fig.legend(handles=legenda, loc="lower center", ncol=2, frameon=False)
-        fig.tight_layout(rect=(0, 0.055, 1, 1))
-        fig.savefig(output_dir / f"heatmap_aoi_{versao}_{tarefa}.png",
-                    dpi=dpi, bbox_inches="tight")
-        plt.close(fig)
-
-    fig, eixos = plt.subplots(1, 2, figsize=(14, 8))
+    fig, eixos = plt.subplots(1, 2, figsize=(15, 8), layout="constrained")
     for ax, versao in zip(eixos, VERSOES):
         codigo_xy, aoi_y = limites_por_versao[versao]
         desenha(ax, imagens_dir / versao / f"{tarefa}.png", mapas[versao],
                 codigo_xy, aoi_y, titulo(versao), escala_maxima)
-    fig.suptitle(f"Heatmaps agregados com AOI1 - {tarefa}")
-    fig.legend(handles=legenda, loc="lower center", ncol=2, frameon=False)
-    fig.text(0.5, 0.035,
-             "A intensidade usa a mesma escala de tempo acumulado nos dois paineis.",
-             ha="center", fontsize=9)
-    fig.tight_layout(rect=(0, 0.07, 1, 0.97))
-    fig.savefig(output_dir / f"comparacao_lambda_omega_aoi_{tarefa}.png",
+    fig.suptitle(f"AOI-only fixation heatmaps — {case_label(tarefa)}")
+    heat_scale(fig, eixos, escala_maxima)
+    fig.savefig(output_dir / f"comparison_aoi_{tarefa.lower()}.png",
                 dpi=dpi, bbox_inches="tight")
     plt.close(fig)
 
@@ -193,7 +159,8 @@ def main():
                 grupos[versao], versao, tarefa, codigo_xy, aoi_y,
             )
             detalhes.extend(linhas)
-            mapas[versao] = calcula_mapa(dados, codigo_xy,
+            aoi_bounds = (*codigo_xy[:2], *aoi_y)
+            mapas[versao] = calcula_mapa(dados, aoi_bounds,
                                          args.grid_size, args.grid_size)
             metadados[versao] = {
                 "Participantes": len(grupos[versao]),
@@ -211,15 +178,25 @@ def main():
                             "EscalaMaximaCompartilhada": escala_maxima})
         salva_graficos(args.output_dir, tarefa, mapas, metadados,
                        limites_por_versao, args.images_dir, escala_maxima, args.dpi)
-        print(f"{tarefa}: Lambda={quantidades['lambda']}, Omega={quantidades['omega']}")
+        print(f"{tarefa}: With Atom={quantidades['lambda']}, Without Atom={quantidades['omega']}")
 
-    pd.DataFrame(detalhes).to_csv(
-        args.output_dir / "fixacoes_aoi_por_participante.csv", index=False,
-        encoding="utf-8-sig", float_format="%.3f",
+    names = {"Participante": "Participant", "Versao": "Condition", "Tarefa": "Task",
+             "FixacoesAOI1": "AOIFixations", "TempoAOI1Segundos": "AOIFixationTimeSeconds",
+             "FixacoesForaAOI1": "OutsideAOIFixations", "TempoForaAOI1Segundos": "OutsideAOIFixationTimeSeconds",
+             "ArquivoFixacoes": "FixationSource", "Participantes": "Participants",
+             "BaseAOI1Pixel": "AOIBottomPixel", "TopoAOI1Pixel": "AOITopPixel",
+             "EscalaMaximaCompartilhada": "SharedScaleMaximum"}
+    def english(rows):
+        frame = pd.DataFrame(rows).rename(columns=names)
+        frame["Condition"] = frame.Condition.map(LABELS)
+        return frame
+    english(detalhes).to_csv(
+        args.output_dir / "participant_aoi_fixations.csv", index=False,
+        encoding="utf-8-sig", float_format="%.6f",
     )
-    pd.DataFrame(resumos).to_csv(
-        args.output_dir / "resumo_aoi_por_versao_tarefa.csv", index=False,
-        encoding="utf-8-sig", float_format="%.3f",
+    english(resumos).to_csv(
+        args.output_dir / "summary.csv", index=False,
+        encoding="utf-8-sig", float_format="%.6f",
     )
     print(f"Resultados: {args.output_dir}")
 

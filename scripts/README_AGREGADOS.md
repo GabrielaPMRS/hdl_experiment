@@ -1,31 +1,114 @@
-# Fontes dos graficos agregados
+# Gráficos para o artigo
 
-Execute normalmente:
+Na raiz do repositório, com o ambiente Python ativado:
 
-```powershell
-python scripts/gera_heatmaps_agregados.py
-python scripts/gera_violin_tempo_aoi.py
+```bash
+python scripts/gera_desempenho_tarefas.py
+python scripts/gera_heatmaps_agregados.py --dpi 300
+python scripts/gera_heatmaps_agregados_aoi.py --dpi 300
 ```
 
-Ambos usam `fontes_agregados.py`: P00, P03, P09, P11, P15, P17, P21 e P25 sao lidos exclusivamente de `HDL-Experiment-Data/recuperados/data`; os demais, de `HDL-Experiment-Data/data`. Cada participante aparece uma vez. As duas pastas sao examinadas, incluindo recuperados sem pasta normal. Pastas de participantes incompletas geram erro; nao ha fallback para dados antigos.
+Todos usam a raiz de dados definida em `caminhos.py` (repositório irmão
+`HDL-Experiment-Data` ou `HDL_DATA_ROOT`). Os quatro casos são T01, T02,
+T04 e T05. Cada figura apresenta somente um caso, com as condições
+**With Atom** e **Without Atom**, nessa ordem. A correspondência é
+lambda = With Atom e omega = Without Atom. Os IDs antigos permanecem
+somente na leitura das coletas, configurações e telas, para preservar sua
+correspondência. Os rótulos das figuras e as novas tabelas são em inglês.
 
-O resumo precisa mapear as quatro tarefas e a condicao correta, e os quatro CSVs de fixacoes devem existir com x, y e duracao. A selecao nao exclui tarefas do P03; esta rodada e preliminar e inclui suas perdas conhecidas.
+## Tempo de execução e tentativas
 
-Cada pasta de resultados recebe `fontes_utilizadas.csv`, com participante, versao, origem e caminhos absolutos. Os calculos e escalas nao foram alterados. A lista de fontes registra entradas, nao certifica a qualidade ocular nem garante contribuicao ao heatmap se nao houver fixacoes validas no codigo.
+`gera_desempenho_tarefas.py` lê `coletas/Pxx/resultadoPxx.json`.
+Usa `codigoId` para identificar o caso, independentemente da ordem sorteada.
+O campo `segundos` é o tempo completo de resolução da tarefa registrado
+pelo aplicativo, incluindo as tentativas dessa tarefa. Não é tempo de
+fixação, tempo na AOI, nem duração da sessão inteira. `tentativas` inclui
+a tentativa correta.
 
-Para outra localizacao use `--data-dir` e, se necessario, `--recovered-data-dir`. Sem o segundo argumento, recuperados/data e procurada no diretorio pai de data. Saidas podem ser alteradas com `--output-dir`.
+Saídas em `graficos/agregados/`:
 
-## Organizacao das saidas
+- `execution_time/tXX_violin.png`: dois violinos dos tempos individuais,
+  boxplots e um ponto por participante; eixo vertical logarítmico.
+- `execution_time/all_tasks_violin.png`: dois violinos com 13 totais por
+  condição. Cada ponto soma o tempo das quatro tarefas de um participante.
+- `attempts/tXX_violin.png`: distribuição das tentativas individuais,
+  boxplots e pontos, em escala linear com marcações inteiras. Os quatro
+  casos compartilham os mesmos limites verticais, de zero até o maior valor
+  individual por tarefa, com margem (atualmente 0–13). O comparativo geral
+  usa limites próprios para acomodar as somas sem cortes (atualmente 0–26).
+- `attempts/all_tasks_violin.png`: dois violinos com a soma das tentativas
+  nas quatro tarefas, calculada separadamente para cada participante.
 
-Todos os scripts agora usam `HDL-Experiment-Data/graficos/agregados`:
-- `heatmaps/`: mapas Lambda/Omega e comparacoes por tarefa.
-- `heatmaps_aoi1/`: comparacoes opcionais com AOI1 vermelha e restante do painel de codigo verde. Gere com `python scripts/gera_heatmaps_agregados_aoi.py`. As duas cores usam a mesma densidade de tempo acumulado e a mesma escala entre Lambda e Omega para cada tarefa; os limites da AOI1 vem de `config/aoi_por_versao.json`. Os CSVs e os mapas usam as mesmas coordenadas corrigidas no processamento individual, sem deslocamento adicional.
-- `tempos/`: violin plots e tabelas de tempo de fixacao no codigo ou AOI1.
-- `tentativas/`: comparativo de tentativas, contagens por participante/tarefa, resumo por grupo e fontes dos JSONs.
-- `dados_participantes/`: dois CSVs, um por versao, com metricas por participante e tarefa, experiencia e indicadores exploratorios de outlier.
+Os títulos informam as somas e o número de participantes. Cada pasta contém
+`participant_task_values.csv`, `summary.csv` e `sources.csv`, permitindo
+conferir os valores e suas origens. Não há exclusão por quartis ou por tempo;
+na coleta atual são 13 participantes por condição em todos os casos.
 
-Tentativas: `python scripts/gera_tentativas_agregadas.py`. Le diretamente `coletas/Pxx/resultadoPxx.json`, usando codigoId (nao ordem de execucao). Barras agrupadas mostram a media de tentativas por participante, com valores acima das barras e eixo vertical comum entre tarefas. Contagens incluem a tentativa correta, conforme registradas pelo aplicativo. Esta metrica nao depende de dados oculares recuperados. Para outra origem use `--coletas-dir`; `--output-dir` continua disponivel nos tres scripts.
+A densidade dos violinos de tempo é estimada em log10 e os ticks mostram
+segundos. Isso mantém a densidade coerente com a escala exibida. As caudas
+suavizadas podem ultrapassar os valores observados; os pontos e boxplots
+mostram as medições. Tentativas são contagens discretas; sua densidade é
+apenas uma visualização suavizada e não significa tentativas fracionárias.
+O comparativo geral mantém a unidade de observação no participante: são 13
+somas individuais por condição, nunca uma única soma usada como distribuição.
+`participant_totals.csv` e `overall_summary.csv` registram essas somas e seu
+resumo. Esse gráfico permite comparar a carga total de resolução; sozinho não
+isola o efeito de fadiga, que depende também da ordem de execução.
 
-Os arquivos produzidos anteriormente fora dessas subpastas foram preservados; os novos comandos atualizam as subpastas acima.
+Os scripts `gera_violin_tempo_aoi.py` e `gera_tentativas_agregadas.py` foram
+mantidos como entradas de compatibilidade para gerar, respectivamente, o
+novo conjunto de tempo completo e o de tentativas. O argumento antigo
+`--regiao` foi retirado: o tempo representado agora é sempre o da tarefa inteira.
+Use `--coletas-dir`, `--output-dir` e `--dpi` para personalizar a execução.
+No comando conjunto, `--output-dir` é a pasta pai dos dois conjuntos.
 
-Dados individuais: `python scripts/gera_dados_participantes.py`. As fixacoes e o tempo de fixacao no codigo usam exatamente o mesmo filtro dos heatmaps agregados. Os indicadores IQR, ranks e razoes para a mediana servem para inspecao exploratoria; nao excluem registros automaticamente.
+## Heatmaps
+
+- `heatmaps/`: todas as fixações válidas dentro do painel do código.
+- `heatmaps_aoi1/`: somente as fixações válidas dentro da AOI correspondente
+  ao átomo (e à região equivalente na condição Without Atom). A densidade
+  é calculada exclusivamente com essas fixações e exibida somente nessa
+  região, sobre a imagem completa do código. Não há verde ou linhas tracejadas.
+
+Para cada caso é gerada somente uma comparação lado a lado (`comparison_tXX.png` ou `comparison_aoi_tXX.png`). Todas exibem barra
+numérica de cores. Cada tarefa e modalidade usa uma escala automática, de zero até o maior
+pico entre With Atom e Without Atom. Os dois painéis de cada comparação
+compartilham os mesmos limites. A escala pode mudar entre tarefas e entre
+código completo/AOI; consulte a barra numérica ao comparar figuras diferentes.
+
+A intensidade representa **densidade acumulada de tempo de fixação em
+ms/pixel²**, usando KDE ponderada pela duração, sem divisão pelo número de
+participantes. Os títulos mostram o número total de fixações e a soma de
+suas durações, em segundos. `n` inclui todos os participantes da condição,
+mesmo se algum não tiver fixações válidas na região. Casos sem fixações
+produzem mapa vazio; dados insuficientes/colineares usam kernels gaussianos
+com desvio de 25 pixels, em vez de excluir participantes.
+
+As coordenadas e limites vêm de `config/aoi_por_versao.json`. Os mapas usam
+as fixações já corrigidas pelo processamento individual; não aplicam novo
+deslocamento. As fontes recuperadas de P00, P03, P09, P11, P15, P17, P21 e
+P25 são selecionadas automaticamente. Os demais usam `data`. As limitações
+das recuperações continuam descritas em `participantes_com_problema/README.md`.
+
+`sources.csv` registra a origem de cada participante. `summary.csv` informa
+totais, quantidade de participantes e máximo da escala compartilhada.
+Na análise da AOI, `participant_aoi_fixations.csv` permite conferir também
+as fixações dentro e fora da região; os dados fora dela não entram no mapa.
+
+## Tabelas auxiliares e resultados anteriores
+
+`gera_dados_participantes.py` continua disponível para inspeção das tabelas
+individuais; seus indicadores exploratórios não filtram os novos gráficos.
+Os resultados substituídos da análise anterior estão preservados em
+`arquivo_diagnosticos/graficos_anteriores_2026-10-09`, no repositório de dados.
+
+## Equilíbrio de experiência
+
+```bash
+python scripts/analisa_equilibrio_experiencia.py
+```
+
+Compara os cinco campos de experiência autodeclarada, contando cada
+participante uma vez. Salva relatório, frequências, respostas individuais e
+figura em `graficos/agregados/experience_balance/`. A análise é descritiva;
+não exclui participantes nem altera os gráficos de desempenho.

@@ -19,11 +19,11 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
 import numpy as np
 import pandas as pd
 import scipy.stats as st
 from fontes_agregados import seleciona_fontes, salva_fontes
+from plot_common import LABELS, HEAT_CMAP, case_label, heat_scale
 
 
 VERSOES = ("lambda", "omega")
@@ -96,9 +96,18 @@ def calcula_mapa(dados: pd.DataFrame, limites, largura: int, altura: int):
         ymin:ymax:complex(0, altura),
     ]
     posicoes = np.vstack([xx.ravel(), yy.ravel()])
+    if dados.empty:
+        return xx, yy, np.zeros_like(xx)
     valores = np.vstack([dados.x, dados.y])
-    kernel = st.gaussian_kde(valores, weights=dados.duracao)
-    densidade = np.reshape(kernel(posicoes).T, xx.shape)
+    try:
+        kernel = st.gaussian_kde(valores, weights=dados.duracao)
+        densidade = np.reshape(kernel(posicoes).T, xx.shape)
+    except (ValueError, np.linalg.LinAlgError):
+        # Sparse/collinear data: fixed 25-pixel Gaussian kernels, never discard a group.
+        densidade = np.zeros_like(xx)
+        for x, y, weight in zip(dados.x, dados.y, dados.duracao):
+            densidade += weight * np.exp(-((xx-x)**2 + (yy-y)**2)/(2*25**2)) / (2*np.pi*25**2)
+        return xx, yy, densidade
     # gaussian_kde normaliza os pesos para que a integral seja 1. Restaurar a
     # duracao total transforma o resultado em densidade acumulada de tempo,
     # permitindo comparar os dois grupos em uma mesma escala absoluta.
@@ -117,31 +126,11 @@ def desenha(ax, imagem_path: Path, mapa, limites, titulo: str, escala_maxima: fl
         aspect="auto",
     )
 
-    cores = plt.cm.Reds(np.linspace(0, 1, 10))
-    cores[:, 3] = np.linspace(0, 1.0, 10)
-    cores[0, 3] = 0.0
-    mapa_cores = ListedColormap(cores)
-    niveis = np.linspace(0.0, escala_maxima, 10)
-
-    ax.contourf(
-        xx,
-        yy,
-        densidade,
-        cmap=mapa_cores,
-        levels=niveis,
-        zorder=1,
-    )
+    ax.pcolormesh(xx, yy, densidade, cmap=HEAT_CMAP,
+                  vmin=0, vmax=max(escala_maxima, 1e-12), shading="gouraud", zorder=1)
     ax.set(xlim=(xmin, xmax), ylim=(ymin, ymax), title=titulo)
     ax.set_xlabel("x-coordinate")
     ax.set_ylabel("y-coordinate")
-
-
-def salva_individual(caminho, imagem, mapa, limites, titulo, escala_maxima, dpi):
-    fig, ax = plt.subplots(figsize=(7, 8))
-    desenha(ax, imagem, mapa, limites, titulo, escala_maxima)
-    fig.tight_layout()
-    fig.savefig(caminho, dpi=dpi, bbox_inches="tight")
-    plt.close(fig)
 
 
 def main() -> None:
@@ -151,8 +140,8 @@ def main() -> None:
     parser.add_argument("--images-dir", type=Path, default=raiz_dados() / "telas")
     parser.add_argument("--output-dir", type=Path, default=raiz_dados() / "graficos/agregados/heatmaps")
     parser.add_argument("--aoi-config", type=Path, default=raiz / "config/aoi_por_versao.json")
-    parser.add_argument("--grid-width", type=int, default=100)
-    parser.add_argument("--grid-height", type=int, default=100)
+    parser.add_argument("--grid-width", type=int, default=160)
+    parser.add_argument("--grid-height", type=int, default=160)
     parser.add_argument("--dpi", type=int, default=200)
     parser.add_argument(
         "--permitir-grupos-desiguais",
@@ -174,8 +163,9 @@ def main() -> None:
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     salva_fontes(sorted([(pasta, versao) for versao, pastas in grupos.items() for pasta in pastas]), args.output_dir)
-    print(f"Participantes: lambda={quantidades['lambda']}, omega={quantidades['omega']}")
+    print(f"Participants: With Atom={quantidades['lambda']}, Without Atom={quantidades['omega']}")
 
+    summary = []
     for tarefa in TAREFAS:
         mapas = {}
         metadados = {}
@@ -193,30 +183,14 @@ def main() -> None:
                 float(dados.duracao.sum()) / 1000.0,
             )
 
-        # Os dois mapas da tarefa usam exatamente os mesmos limites de cor.
-        # Assim, o mesmo tom de vermelho representa a mesma densidade acumulada
-        # de tempo em Lambda e Omega.
-        escala_maxima = max(
-            float(mapas[versao][2].max()) for versao in VERSOES
-        )
-
+        escala_maxima = max(float(mapas[v][2].max()) for v in VERSOES)
         for versao in VERSOES:
             n_fixacoes, usados, duracao_total = metadados[versao]
-            titulo = (
-                f"{versao.capitalize()} - {tarefa} "
-                f"({len(usados)} participantes; {n_fixacoes} fixacoes; "
-                f"{duracao_total:.1f} s)"
-            )
-            imagem = args.images_dir / versao / f"{tarefa}.png"
-            if not imagem.is_file():
-                raise FileNotFoundError(f"Tela nao encontrada: {imagem}")
-            salva_individual(
-                args.output_dir / f"heatmap_{versao}_{tarefa}.png",
-                imagem, mapas[versao], limites_por_versao[versao], titulo,
-                escala_maxima, args.dpi,
-            )
+            summary.append(dict(Task=tarefa, Condition=LABELS[versao], Participants=len(grupos[versao]),
+                                Contributors=len(usados), TotalFixations=n_fixacoes,
+                                TotalFixationTimeSeconds=duracao_total, SharedScaleMaximum=escala_maxima))
 
-        fig, eixos = plt.subplots(1, 2, figsize=(14, 8))
+        fig, eixos = plt.subplots(1, 2, figsize=(15, 8), layout="constrained")
         for ax, versao in zip(eixos, VERSOES):
             n_fixacoes, usados, duracao_total = metadados[versao]
             desenha(
@@ -224,15 +198,16 @@ def main() -> None:
                 args.images_dir / versao / f"{tarefa}.png",
                 mapas[versao],
                 limites_por_versao[versao],
-                f"{versao.capitalize()} ({len(usados)} participantes; "
-                f"{n_fixacoes} fixacoes; {duracao_total:.1f} s)",
+                f"{LABELS[versao]} (n={len(grupos[versao])})\n"
+                f"Total: {n_fixacoes} fixations; {duracao_total:.1f} s",
                 escala_maxima,
             )
-        fig.suptitle(f"Heatmaps agregados - {tarefa}")
-        fig.tight_layout()
-        fig.savefig(args.output_dir / f"comparacao_lambda_omega_{tarefa}.png", dpi=args.dpi, bbox_inches="tight")
+        fig.suptitle(f"Aggregated fixation heatmaps — {case_label(tarefa)}")
+        heat_scale(fig, eixos, escala_maxima)
+        fig.savefig(args.output_dir / f"comparison_{tarefa.lower()}.png", dpi=args.dpi, bbox_inches="tight")
         plt.close(fig)
-        print(f"{tarefa}: mapas gerados")
+        print(f"{tarefa}: heatmaps generated")
+    pd.DataFrame(summary).to_csv(args.output_dir / "summary.csv", index=False)
 
 
 if __name__ == "__main__":
