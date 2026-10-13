@@ -13,12 +13,17 @@ import pandas as pd
 import seaborn as sns
 
 from caminhos import raiz_dados
+from selecao_participantes import seleciona_nomes
 from plot_common import VERSIONS, TASKS, LABELS, COLORS, case_label
 
 
-def load_sessions(collections):
+def load_sessions(collections, *, apply_selection=True):
     rows, sources = [], []
-    for folder in sorted(collections.glob('P*')):
+    folders = {p.name: p for p in collections.glob('P*')
+               if p.is_dir() and re.fullmatch(r'P\d+', p.name)}
+    names = seleciona_nomes(folders) if apply_selection else sorted(folders)
+    for name in names:
+        folder = folders[name]
         if not folder.is_dir() or not re.fullmatch(r'P\d+', folder.name):
             continue
         path = folder / f'resultado{folder.name}.json'

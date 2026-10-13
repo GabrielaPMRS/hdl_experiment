@@ -112,3 +112,98 @@ Compara os cinco campos de experiência autodeclarada, contando cada
 participante uma vez. Salva relatório, frequências, respostas individuais e
 figura em `graficos/agregados/experience_balance/`. A análise é descritiva;
 não exclui participantes nem altera os gráficos de desempenho.
+
+## Seleção manual de participantes
+
+Edite apenas `config/participantes_analise.json`. O padrão mantém todos:
+
+```json
+{
+  "incluidos": null
+}
+```
+
+Para usar os primeiros 12 participantes (P00 até P11, seis por condição):
+
+```json
+{
+  "incluidos": [
+    "P00", "P01", "P02", "P03", "P04", "P05",
+    "P06", "P07", "P08", "P09", "P10", "P11"
+  ]
+}
+```
+
+Adicione ou remova IDs dessa lista para formar qualquer seleção manual.
+Os IDs pares são With Atom; os ímpares, Without Atom. A lista deve conter
+pelo menos uma pessoa de cada condição para produzir os comparativos.
+Com uma única pessoa ou valores iguais em um grupo, não há distribuição
+variável suficiente para formar um violino; os pontos continuam representando
+as medições disponíveis. Uma lista vazia é considerada erro, não “todos”.
+IDs inexistentes ou repetidos também geram erro, evitando exclusões silenciosas.
+
+A seleção vale para tempo, tentativas, heatmaps e as análises auxiliares que
+usam os mesmos leitores (incluindo a análise de experiência). Os arquivos
+originais e o reprocessamento individual não são alterados. As recuperações
+especiais continuam sendo usadas para os IDs selecionados que as exigem.
+O padrão `null` restaura o comportamento completo sem reverter código.
+
+Para explorar experiência, consulte as respostas individuais em
+`HDL-Experiment-Data/graficos/agregados/experience_balance/participant_experience.csv`
+ou os JSONs originais em `coletas`. Escolha explicitamente o critério (por
+exemplo, hardware ≥3 anos ou software ≥6 anos), e coloque os IDs desejados
+na mesma lista. Não há classificação automática de “experiente”.
+
+Depois de editar a lista, regenere os gráficos. Para preservar os resultados
+principais, salve este experimento em uma pasta própria:
+
+```bash
+source .venv/bin/activate
+python scripts/gera_desempenho_tarefas.py --output-dir ../HDL-Experiment-Data/graficos/exploratorios/primeiros_12
+python scripts/gera_heatmaps_agregados.py --permitir-grupos-desiguais --output-dir ../HDL-Experiment-Data/graficos/exploratorios/primeiros_12/heatmaps --dpi 300
+python scripts/gera_heatmaps_agregados_aoi.py --permitir-grupos-desiguais --output-dir ../HDL-Experiment-Data/graficos/exploratorios/primeiros_12/heatmaps_aoi1 --dpi 300
+```
+
+Troque `primeiros_12` pelo nome do experimento, como `hardware` ou `software`.
+`sources.csv`, as tabelas e os títulos refletem somente os participantes
+selecionados. O argumento `--permitir-grupos-desiguais` permite seleções com
+quantidades diferentes entre condições, sem remover ninguém para igualar
+grupos. Nesse caso, os heatmaps continuam representando tempo acumulado
+absoluto; as quantidades diferentes precisam ser consideradas na interpretação.
+Sem `--output-dir`, os comandos atualizam as pastas principais habituais.
+
+## Regenerar todos os comparativos com um comando
+
+Na raiz do repositório:
+
+```bash
+.venv/bin/python scripts/gera_graficos.py
+```
+
+Usa a seleção atual de `config/participantes_analise.json` e gera os cinco
+violinos de tempo, os cinco de tentativas, os quatro heatmaps do código e
+os quatro da AOI. Todos são salvos a 300 DPI. Aceita grupos de tamanhos
+diferentes e interrompe se algum gerador falhar.
+
+Para guardar uma rodada separada ou alterar a resolução:
+
+```bash
+.venv/bin/python scripts/gera_graficos.py --output-dir ../HDL-Experiment-Data/graficos/exploratorios/hardware --dpi 200
+```
+
+Sem `--output-dir`, atualiza as quatro pastas de `graficos/agregados`.
+
+## Revisar candidatos a outliers sem excluir dados
+
+```bash
+python scripts/analisa_outliers.py
+```
+
+Salva `outlier_review/review.md` e duas pastas: `all_participants` (coleta
+completa) e `current_selection` (lista atual). `candidates.csv` contém apenas
+as sinalizações; `iqr_review.csv` contém todas as observações e limites por
+caso × condição. `iqr_review_pooled.csv` permite conferir o efeito de agrupar
+as condições por caso. A análise considera somente o tempo completo de execução de cada tarefa
+(`ExecutionTimeSeconds`), sem classificar tentativas ou fixações.
+A regra usa 1,5 × IQR e marca grupos com IQR zero
+ou amostra insuficiente. Não altera a seleção, os dados ou os gráficos.

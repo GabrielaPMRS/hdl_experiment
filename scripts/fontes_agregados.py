@@ -4,6 +4,7 @@ import re
 from pathlib import Path
 from plot_common import LABELS
 import pandas as pd
+from selecao_participantes import seleciona_nomes
 
 RECUPERADOS = frozenset({'P00', 'P03', 'P09', 'P11', 'P15', 'P17', 'P21', 'P25'})
 TAREFAS = {'T01', 'T02', 'T04', 'T05'}
@@ -23,7 +24,7 @@ def seleciona_fontes(data_dir, recovered_dir=None):
             pastas[nome] = pasta
         return pastas
     normais, recuperadas = inventario(data_dir), inventario(recovered_dir)
-    nomes = sorted(set(normais) | set(recuperadas))
+    nomes = seleciona_nomes(set(normais) | set(recuperadas))
     if not nomes:
         raise ValueError(f'Nenhum participante encontrado em {data_dir} ou {recovered_dir}')
     fontes = []

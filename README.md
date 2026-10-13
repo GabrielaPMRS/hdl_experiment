@@ -77,3 +77,17 @@ python -m unittest discover -s tests
 ```
 
 Use uma instalacao Python com numpy, pandas, scipy, matplotlib, seaborn e Pillow para executar os geradores. O parametro `-PythonExecutable` do processamento permite selecionar a instalacao.
+
+## Explorar subconjuntos de participantes
+
+Edite `config/participantes_analise.json`: `"incluidos": null` inclui todos;
+`"incluidos": ["P00", "P01", "P04", "P05"]` usa somente esses IDs.
+A mesma seleção é aplicada a tempo, tentativas e heatmaps.
+Veja exemplos dos primeiros 12 participantes e comandos para salvar
+experimentos separados em [scripts/README_AGREGADOS.md](scripts/README_AGREGADOS.md#seleção-manual-de-participantes).
+
+Para regenerar todos os 18 gráficos comparativos com a seleção atual:
+
+```bash
+.venv/bin/python scripts/gera_graficos.py
+```

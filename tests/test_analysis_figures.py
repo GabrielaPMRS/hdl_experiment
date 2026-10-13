@@ -21,7 +21,7 @@ class SessionMetricsTest(unittest.TestCase):
         root = raiz_dados() / 'coletas'
         if not root.exists():
             self.skipTest('Data repository unavailable')
-        data, _ = load_sessions(root)
+        data, _ = load_sessions(root, apply_selection=False)
         self.assertEqual(len(data), 26 * 4)
         self.assertTrue((data.groupby(['Task','Condition']).size() == 13).all())
         for participant in ('P00','P01'):

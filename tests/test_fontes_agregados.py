@@ -1,4 +1,5 @@
 import csv
+from unittest.mock import patch
 import sys
 import tempfile
 import unittest
@@ -7,6 +8,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
 from fontes_agregados import seleciona_fontes
 
 class FontesTest(unittest.TestCase):
+    def setUp(self):
+        # These source-integrity tests use synthetic cohorts, independent of the user's selection.
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        config = Path(temp.name) / 'selection.json'
+        config.write_text('{"incluidos": null}')
+        override = patch('selecao_participantes.CONFIG', config)
+        override.start()
+        self.addCleanup(override.stop)
+
     def cria(self, root, nome):
         pasta = root / nome
         pasta.mkdir(parents=True)
